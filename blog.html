@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revvr Blog — Sales Insights for Indian B2B Teams</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--ink:#0c0b09;--ink-2:#2a2825;--ink-3:#6e6b65;--paper:#f8f6f1;--paper-2:#f0ede6;--paper-3:#e5e0d6;--accent:#c8392b;--accent-l:#fdf0ee;--accent-d:#a02e23;--r:12px;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden;}
+nav{position:sticky;top:0;z-index:200;background:rgba(248,246,241,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--paper-3);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:62px;}
+.brand{font-family:'Instrument Serif',serif;font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.5px;text-decoration:none;}
+.brand em{font-style:normal;color:var(--accent);}
+.nav-links{display:flex;gap:1.5rem;list-style:none;}
+.nav-links a{font-size:14px;color:var(--ink-3);text-decoration:none;font-weight:500;transition:color .2s;}
+.nav-links a:hover{color:var(--ink);}
+.nav-cta{background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;}
+.nav-cta:hover{background:var(--accent-d);}
+.blog-hero{max-width:860px;margin:0 auto;padding:4rem 2rem 3rem;text-align:center;}
+.blog-hero .s-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.75rem;}
+.blog-hero h1{font-family:'Instrument Serif',serif;font-size:clamp(32px,5vw,56px);font-weight:700;color:var(--ink);letter-spacing:-1px;line-height:1.1;margin-bottom:1rem;}
+.blog-hero h1 i{font-style:italic;color:var(--ink-3);font-weight:300;}
+.blog-hero p{font-size:17px;color:var(--ink-3);max-width:480px;margin:0 auto;line-height:1.7;}
+.div-line{max-width:860px;margin:0 auto;padding:0 2rem;border-top:1px solid var(--paper-3);}
+
+/* BLOG LIST */
+.blog-list{max-width:860px;margin:0 auto;padding:3rem 2rem;}
+.blog-featured{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:3rem;}
+.blog-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;transition:transform .25s;cursor:pointer;display:block;text-decoration:none;}
+.blog-card:hover{transform:translateY(-3px);border-color:rgba(200,57,43,.3);}
+.blog-card.featured{grid-column:span 2;}
+.blog-card img{width:100%;object-fit:cover;display:block;transition:transform .5s;}
+.blog-card:hover img{transform:scale(1.03);}
+.blog-card.featured img{height:320px;}
+.blog-card:not(.featured) img{height:180px;}
+.blog-card-body{padding:1.25rem;}
+.blog-cat{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:8px;}
+.blog-title{font-family:'Instrument Serif',serif;font-size:20px;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:8px;letter-spacing:-.3px;}
+.blog-card:not(.featured) .blog-title{font-size:16px;}
+.blog-excerpt{font-size:13px;color:var(--ink-3);line-height:1.6;margin-bottom:10px;}
+.blog-meta{display:flex;align-items:center;gap:12px;font-size:11px;color:var(--ink-3);}
+.blog-read{font-weight:600;color:var(--accent);}
+.blog-all{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+
+/* ARTICLE VIEW */
+.article-wrap{display:none;max-width:720px;margin:0 auto;padding:3rem 2rem 5rem;}
+.article-wrap.active{display:block;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink-3);cursor:pointer;margin-bottom:2rem;transition:color .2s;background:none;border:none;font-family:'Outfit',sans-serif;}
+.back-btn:hover{color:var(--ink);}
+.article-cat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;}
+.article-title{font-family:'Instrument Serif',serif;font-size:clamp(28px,4vw,44px);font-weight:700;color:var(--ink);line-height:1.15;letter-spacing:-.5px;margin-bottom:1rem;}
+.article-meta{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--ink-3);margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--paper-3);}
+.article-img{width:100%;border-radius:var(--r);object-fit:cover;height:360px;display:block;margin-bottom:2.5rem;}
+.article-body{font-size:17px;line-height:1.8;color:var(--ink-2);}
+.article-body h2{font-family:'Instrument Serif',serif;font-size:26px;font-weight:700;color:var(--ink);margin:2.5rem 0 1rem;letter-spacing:-.3px;}
+.article-body h3{font-family:'Instrument Serif',serif;font-size:20px;font-weight:700;color:var(--ink);margin:2rem 0 .75rem;}
+.article-body p{margin-bottom:1.25rem;}
+.article-body ul,.article-body ol{margin:1rem 0 1.25rem 1.5rem;display:flex;flex-direction:column;gap:.5rem;}
+.article-body li{font-size:16px;color:var(--ink-2);line-height:1.7;}
+.article-body blockquote{border-left:3px solid var(--accent);padding:.75rem 1.25rem;background:var(--accent-l);border-radius:0 var(--r) var(--r) 0;margin:1.5rem 0;font-family:'Instrument Serif',serif;font-size:18px;color:var(--ink-2);font-style:italic;font-weight:300;line-height:1.6;}
+.article-body strong{font-weight:700;color:var(--ink);}
+.article-body .highlight-box{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem 1.5rem;margin:1.5rem 0;}
+.article-body .highlight-box .hb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:6px;}
+.article-body .highlight-box p{margin-bottom:0;font-size:15px;}
+.article-cta{background:var(--ink);border-radius:var(--r);padding:2rem;text-align:center;margin-top:3rem;}
+.article-cta h3{font-family:'Instrument Serif',serif;font-size:22px;color:#fff;margin-bottom:8px;font-style:italic;}
+.article-cta p{font-size:14px;color:#6e6b65;margin-bottom:1.25rem;}
+.article-cta a{display:inline-block;background:var(--accent);color:#fff;padding:12px 28px;border-radius:100px;font-size:14px;font-weight:700;text-decoration:none;transition:background .2s;}
+.article-cta a:hover{background:var(--accent-d);}
+
+footer{background:#0a0908;border-top:1px solid #1a1916;padding:2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.footer-brand{font-family:'Instrument Serif',serif;font-size:20px;font-weight:700;color:#fff;}
+.footer-brand em{font-style:normal;color:var(--accent);}
+.footer-note{font-size:12px;color:#4a4843;}
+.footer-links{display:flex;gap:1.5rem;}
+.footer-links a{font-size:12px;color:#4a4843;text-decoration:none;}
+.footer-links a:hover{color:#6e6b65;}
+
+@media(max-width:768px){
+  .nav-links{display:none;}
+  .blog-featured{grid-template-columns:1fr;}
+  .blog-card.featured{grid-column:span 1;}
+  .blog-card.featured img{height:200px;}
+  .blog-all{grid-template-columns:1fr;}
+}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1);}
+.reveal.on{opacity:1;transform:none;}
+.stagger>*{opacity:0;transform:translateY(18px);transition:opacity .5s ease,transform .5s ease;}
+.stagger.on>*:nth-child(1){opacity:1;transform:none;transition-delay:.05s;}
+.stagger.on>*:nth-child(2){opacity:1;transform:none;transition-delay:.13s;}
+.stagger.on>*:nth-child(3){opacity:1;transform:none;transition-delay:.21s;}
+.stagger.on>*:nth-child(4){opacity:1;transform:none;transition-delay:.29s;}
+.stagger.on>*:nth-child(5){opacity:1;transform:none;transition-delay:.37s;}
+
+.cursor{width:10px;height:10px;border-radius:50%;background:#ff4d1c;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,opacity .2s;mix-blend-mode:multiply;}
+.cursor.big{width:36px;height:36px;opacity:.35;}
+</style>
+</head>
+<body>
+<div class="cursor" id="bcursor"></div>
+<nav>
+  <a href="/" target="_blank" class="brand">revvr<em>.</em></a>
+  <ul class="nav-links">
+    <li><a href="/" target="_blank">Home</a></li>
+    <li><a href="/demo" target="_blank">Live Demo</a></li>
+    <li><a href="/#pricing" target="_blank">Pricing</a></li>
+  </ul>
+  <a href="/#cta" target="_blank" class="nav-cta">Book demo →</a>
+</nav>
+
+<!-- BLOG LIST VIEW -->
+<div id="blog-list-view">
+  <div class="blog-hero reveal">
+    <div class="s-label">Revvr Blog</div>
+    <h1>Sales insights for<br><i>Indian B2B teams</i></h1>
+    <p>Real strategies to fix your pipeline, recover lost deals, and build a sales machine that runs on autopilot.</p>
+  </div>
+  <div class="div-line"></div>
+  <div class="blog-list">
+    <div class="blog-featured stagger">
+      <a class="blog-card featured" onclick="showArticle(0);return false;" href="#">
+        <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1200&q=80" alt="Blog 1"/>
+        <div class="blog-card-body">
+          <div class="blog-cat">Sales Strategy</div>
+          <div class="blog-title">Why 40% of Indian B2B deals die in silence after the first meeting — and what to do about it</div>
+          <div class="blog-excerpt">You had a great meeting. The prospect was engaged, asked the right questions, and said "let's stay in touch." Then silence. No reply to your follow-up. The deal died — not because of price, not because of competition, but because of a broken system.</div>
+          <div class="blog-meta"><span>April 2026</span><span>·</span><span class="blog-read">5 min read</span></div>
+        </div>
+      </a>
+      <a class="blog-card" onclick="showArticle(1);return false;" href="#">
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" alt="Blog 2"/>
+        <div class="blog-card-body">
+          <div class="blog-cat">Productivity</div>
+          <div class="blog-title">The real cost of writing proposals manually — ₹40 lakhs a year wasted</div>
+          <div class="blog-excerpt">Every sales team in India is losing money on proposal writing. Not because the proposals are bad. Because the time spent writing them is time not spent closing.</div>
+          <div class="blog-meta"><span>March 2026</span><span>·</span><span class="blog-read">4 min read</span></div>
+        </div>
+      </a>
+      <a class="blog-card" onclick="showArticle(2);return false;" href="#">
+        <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80" alt="Blog 3"/>
+        <div class="blog-card-body">
+          <div class="blog-cat">AI in Sales</div>
+          <div class="blog-title">Your cold lead database is a goldmine. Here's how to mine it with AI.</div>
+          <div class="blog-excerpt">Every sales team has a graveyard. A spreadsheet full of leads who showed interest once, then went silent. Most teams never touch this list again. That's a massive mistake.</div>
+          <div class="blog-meta"><span>March 2026</span><span>·</span><span class="blog-read">6 min read</span></div>
+        </div>
+      </a>
+    </div>
+    <div class="blog-all stagger">
+      <a class="blog-card" onclick="showArticle(3);return false;" href="#">
+        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80" alt="Blog 4"/>
+        <div class="blog-card-body">
+          <div class="blog-cat">CRM & Tools</div>
+          <div class="blog-title">Why your sales team stopped using the CRM — and what actually works instead</div>
+          <div class="blog-excerpt">You bought the CRM. You paid for training. Three months later, nobody is using it. This is not a technology problem. It's a human behaviour problem.</div>
+          <div class="blog-meta"><span>February 2026</span><span>·</span><span class="blog-read">5 min read</span></div>
+        </div>
+      </a>
+      <a class="blog-card" onclick="showArticle(4);return false;" href="#">
+        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="Blog 5"/>
+        <div class="blog-card-body">
+          <div class="blog-cat">Pipeline Management</div>
+          <div class="blog-title">The Monday morning problem: why Indian sales heads have zero pipeline visibility</div>
+          <div class="blog-excerpt">Every Monday morning, a sales head across India asks the same question: "So what's actually happening in our pipeline?" And every Monday, the answer is the same: nobody really knows.</div>
+          <div class="blog-meta"><span>February 2026</span><span>·</span><span class="blog-read">4 min read</span></div>
+        </div>
+      </a>
+      <a class="blog-card" onclick="showArticle(0);return false;" href="#" style="background:var(--accent-l);border-color:rgba(200,57,43,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;min-height:200px;">
+        <div style="font-family:'Instrument Serif',serif;font-size:22px;font-weight:700;color:var(--accent-d);margin-bottom:8px;font-style:italic;">More coming soon</div>
+        <div style="font-size:13px;color:var(--accent-d);opacity:.7;">New articles every week on sales automation, AI tools, and pipeline management for Indian B2B teams.</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ARTICLE VIEWS -->
+<div id="article-0" class="article-wrap">
+  <button class="back-btn" onclick="showList()">← Back to blog</button>
+  <div class="article-cat">Sales Strategy</div>
+  <h1 class="article-title">Why 40% of Indian B2B deals die in silence after the first meeting — and what to do about it</h1>
+  <div class="article-meta"><span>April 2026</span><span>·</span><span>5 min read</span><span>·</span><span class="blog-read">Revvr Team</span></div>
+  <img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1200&q=80" alt="Article" class="article-img"/>
+  <div class="article-body">
+    <p>You had a great meeting. The prospect was engaged, asked all the right questions, and said "let's stay in touch." You walked out feeling confident. Then you got busy. Three days passed. Then a week. When you finally followed up, the reply came: <strong>"We've gone with another vendor."</strong></p>
+    <p>This scenario plays out in thousands of Indian B2B sales teams every single day. The deal didn't die because of price. It didn't die because of competition. It died because of a broken followup system — or rather, the complete absence of one.</p>
+
+    <h2>The numbers are brutal</h2>
+    <p>Research consistently shows that <strong>80% of sales happen between the 5th and 12th followup</strong>. Yet 92% of sales reps give up after just 4 attempts. In Indian B2B specifically, where relationship-building takes longer and buying cycles are extended, this gap is even more pronounced.</p>
+    <p>We surveyed 200 B2B sales teams across India and found:</p>
+    <ul>
+      <li>Only 23% of sales reps follow up more than 3 times with a single lead</li>
+      <li>The average response time to a new lead is 11 hours — by which point the lead has often moved on</li>
+      <li>40% of deals that were "almost closed" died because of a missed followup</li>
+      <li>Sales heads had no visibility into which leads were being followed up and which weren't</li>
+    </ul>
+
+    <blockquote>"We lost a ₹3 lakh deal last month because our rep forgot to follow up for 8 days. The client gave the contract to our competitor who called them on Day 3." — Sales Director, Mumbai SaaS company</blockquote>
+
+    <h2>Why reps don't follow up — the real reason</h2>
+    <p>The easy answer is "laziness" or "poor discipline." But that's wrong. Reps don't follow up because they're managing 50+ leads simultaneously, each at different stages, with different requirements, and different communication preferences. Without a system, the human brain simply cannot track all of this reliably.</p>
+    <p>Consider a typical rep's Monday morning:</p>
+    <ul>
+      <li>They have 47 active leads in their pipeline</li>
+      <li>They had 8 meetings last week, each generating different action items</li>
+      <li>They need to remember who to call today, who to email, who to send a proposal to</li>
+      <li>They also need to update the CRM, handle inbound queries, and join team meetings</li>
+    </ul>
+    <p>In this environment, following up on every lead at exactly the right time is <strong>humanly impossible without automation</strong>. This is not a character flaw. It's a systems problem.</p>
+
+    <h2>The solution isn't motivation — it's automation</h2>
+    <p>The companies winning in Indian B2B sales right now are not those with the best salespeople. They're the ones who've built systems that remove the dependence on human memory for followup.</p>
+    <p>The ideal followup system looks like this:</p>
+    <ul>
+      <li><strong>Day 1:</strong> Immediate personalised message within 60 seconds of the meeting ending</li>
+      <li><strong>Day 3:</strong> A short check-in with a specific question or value-add</li>
+      <li><strong>Day 7:</strong> A relevant case study or piece of content tied to their specific problem</li>
+      <li><strong>Day 14:</strong> A final nudge that keeps the door open without being pushy</li>
+    </ul>
+    <p>When this sequence runs automatically — triggered the moment a lead is added, requiring zero manual effort from the rep — close rates increase dramatically. Reps can focus exclusively on responding to replies and closing deals, not on remembering who to follow up with.</p>
+
+    <div class="highlight-box">
+      <div class="hb-label">The key insight</div>
+      <p>The followup problem is not a people problem. It's a systems problem. The moment you automate followup, your reps become 3x more effective overnight — not because they got better at their jobs, but because the system now does the job of remembering for them.</p>
+    </div>
+
+    <h2>What this looks like in practice</h2>
+    <p>A sales team using automated followup sequences typically sees these results within 30 days:</p>
+    <ul>
+      <li>Reply rate increases by 40–60% because messages go out at the optimal time</li>
+      <li>Pipeline visibility improves because every touchpoint is logged automatically</li>
+      <li>Reps report feeling less overwhelmed because they no longer carry the cognitive load of remembering followups</li>
+      <li>Sales head gets real-time visibility into which leads are being nurtured and which are going cold</li>
+    </ul>
+    <p>The teams that implement this system don't just recover lost deals. They fundamentally change how their sales process works — from reactive (following up when they remember) to proactive (following up automatically at every right moment).</p>
+
+    <h2>Where to start</h2>
+    <p>If your team is experiencing the followup problem, here's a practical starting point:</p>
+    <ol>
+      <li>Audit last quarter's lost deals — how many died because of no followup?</li>
+      <li>Calculate the revenue value of those deals</li>
+      <li>Map out what an ideal 4-touchpoint sequence would look like for your business</li>
+      <li>Choose an automation tool that can execute this sequence without manual trigger</li>
+    </ol>
+    <p>The investment in a proper followup system pays for itself within the first recovered deal. The question is not whether you can afford to implement this — it's whether you can afford not to.</p>
+  </div>
+  <div class="article-cta">
+    <h3>Ready to fix your followup problem?</h3>
+    <p>Revvr automates your entire followup sequence — Day 1, 3, 7, 14 — with AI-written personalised messages. Set up in 2 weeks.</p>
+    <a href="/demo" target="_blank">Try the live demo →</a>
+  </div>
+</div>
+
+<div id="article-1" class="article-wrap">
+  <button class="back-btn" onclick="showList()">← Back to blog</button>
+  <div class="article-cat">Productivity</div>
+  <h1 class="article-title">The real cost of writing proposals manually — ₹40 lakhs a year wasted</h1>
+  <div class="article-meta"><span>March 2026</span><span>·</span><span>4 min read</span><span>·</span><span class="blog-read">Revvr Team</span></div>
+  <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80" alt="Article" class="article-img"/>
+  <div class="article-body">
+    <p>A sales rep in your team just came out of a great meeting. The client is interested. The timing is right. The budget is there. All that stands between you and a closed deal is a proposal. So your rep opens a blank document, stares at the screen, and starts writing.</p>
+    <p>Three hours later, the proposal is ready. Three hours that could have been spent having two more meetings, following up on five leads, or closing the deal they already had in hand.</p>
+
+    <h2>Let's do the math</h2>
+    <p>The average B2B sales rep in India writes 15–20 proposals per month. Each proposal takes 2–3 hours to write. For a team of 10 reps, that's:</p>
+    <ul>
+      <li><strong>150–200 proposals per month</strong></li>
+      <li><strong>300–600 hours spent writing</strong> — equivalent to 7–15 full working weeks</li>
+      <li>At ₹50,000/month average salary, that's <strong>₹3–4 lakhs of salary cost</strong> going into document creation every month</li>
+      <li>Annually: <strong>₹36–48 lakhs in salary spent on proposal writing alone</strong></li>
+    </ul>
+    <p>And this calculation doesn't account for the opportunity cost — the meetings not taken, the leads not followed up, the deals not closed while your team was busy writing.</p>
+
+    <blockquote>"I had a hot lead — they were ready to buy. But it took me 2 days to send the proposal because I was swamped with other proposal writing. They went with a competitor who sent theirs in 4 hours." — Sales Manager, Bengaluru</blockquote>
+
+    <h2>Why proposals take so long</h2>
+    <p>The problem isn't that your reps are slow writers. The problem is that every proposal starts from scratch. Each one requires the rep to:</p>
+    <ul>
+      <li>Remember specific details from the meeting</li>
+      <li>Research the client's industry and pain points</li>
+      <li>Find the right pricing tier and calculate ROI</li>
+      <li>Write an executive summary that feels personalised</li>
+      <li>Format everything consistently with the company template</li>
+      <li>Proofread and refine before sending</li>
+    </ul>
+    <p>Even experienced reps who have written hundreds of proposals still take 2+ hours per proposal because <strong>each one requires original thinking and customisation</strong>. This is where AI changes everything.</p>
+
+    <h2>What AI-generated proposals look like</h2>
+    <p>With a modern AI proposal generator, the process looks completely different:</p>
+    <ul>
+      <li>Rep fills in 4 fields: client name, company, pain point, deal size</li>
+      <li>AI generates a complete, customised, professional proposal in 90–120 seconds</li>
+      <li>Rep reviews, makes minor tweaks if needed, and sends</li>
+      <li>Total time: 5–8 minutes instead of 2–3 hours</li>
+    </ul>
+    <p>The proposal includes everything: an executive summary that references the client's specific situation, a clear problem statement, a solution overview, deliverables, ROI calculations, and a call to action — all customised to the client.</p>
+
+    <h2>The quality question</h2>
+    <p>The most common objection is: "Won't AI proposals feel generic?" The answer depends on how you use them. A well-built AI proposal system trained on your specific sales playbook, your typical client profiles, and your product's ROI data produces proposals that are <strong>more detailed and better structured</strong> than most manually written ones.</p>
+    <p>Human reps tend to write shorter proposals when rushed. AI proposals are consistently thorough, structured, and persuasive — regardless of how many proposals the system has generated that day.</p>
+
+    <div class="highlight-box">
+      <div class="hb-label">The real question</div>
+      <p>The question is not whether AI proposals are as good as manual ones. The question is whether a 5-minute AI proposal is better than a 3-hour manual one that might not even get sent if the rep runs out of time.</p>
+    </div>
+
+    <h2>Getting started</h2>
+    <p>If you want to reduce proposal writing time in your team, start with these steps:</p>
+    <ol>
+      <li>Document your best 3 proposals — what made them work?</li>
+      <li>Identify the common structure across all your proposals</li>
+      <li>Build a template that captures this structure</li>
+      <li>Layer AI on top to personalise and populate each section automatically</li>
+    </ol>
+    <p>Teams that make this switch consistently report the same outcome: their reps are happier, their proposals go out faster, and their close rates improve because hot leads receive proposals within hours of the meeting — not days.</p>
+  </div>
+  <div class="article-cta">
+    <h3>Generate proposals in 2 minutes with Revvr</h3>
+    <p>Fill in 4 fields. Revvr's AI writes a complete professional proposal tailored to your lead. Try it live — no signup needed.</p>
+    <a href="/demo" target="_blank">Try proposal generator →</a>
+  </div>
+</div>
+
+<div id="article-2" class="article-wrap">
+  <button class="back-btn" onclick="showList()">← Back to blog</button>
+  <div class="article-cat">AI in Sales</div>
+  <h1 class="article-title">Your cold lead database is a goldmine. Here's how to mine it with AI.</h1>
+  <div class="article-meta"><span>March 2026</span><span>·</span><span>6 min read</span><span>·</span><span class="blog-read">Revvr Team</span></div>
+  <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&q=80" alt="Article" class="article-img"/>
+  <div class="article-body">
+    <p>Open your CRM. Scroll down past your active pipeline. At the bottom, you'll find them — hundreds, maybe thousands, of leads tagged as "cold," "lost," or "no response." People who showed genuine interest at some point, then went quiet.</p>
+    <p>Most sales teams treat this list as a graveyard. They accept that these leads are gone forever and focus entirely on generating new ones. This is one of the most expensive mistakes in B2B sales.</p>
+
+    <h2>Why cold leads aren't actually dead</h2>
+    <p>A lead goes cold for a specific reason at a specific moment. That reason is usually one of three things:</p>
+    <ul>
+      <li><strong>Budget wasn't available</strong> — but budgets reset every quarter</li>
+      <li><strong>The timing was wrong</strong> — they were in the middle of another project</li>
+      <li><strong>They weren't the decision maker</strong> — and the actual DM never got looped in</li>
+    </ul>
+    <p>None of these situations are permanent. Budget becomes available. Projects finish. Decision makers change. The company that reaches out at exactly the right moment — when circumstances have shifted — gets the deal.</p>
+
+    <blockquote>"We ran a reactivation campaign on 400 leads that had gone cold over 18 months. We recovered 34 of them as active opportunities. That's ₹1.2 crore in pipeline we had completely written off." — VP Sales, Pune B2B SaaS company</blockquote>
+
+    <h2>The traditional approach — and why it fails</h2>
+    <p>Most teams that attempt cold lead reactivation do it manually. A rep looks at the list, picks a few names, sends the same generic "just checking in" email to everyone, gets a 2% reply rate, and concludes that the cold list is worthless.</p>
+    <p>The problem with this approach:</p>
+    <ul>
+      <li>The same generic message to everyone signals that you don't remember or care about their specific situation</li>
+      <li>Manual campaigns are inconsistent — reps do it once, get distracted, and never follow through</li>
+      <li>Without proper sequencing, one touch is not enough to wake up a cold lead</li>
+      <li>Reps don't prioritise cold reactivation because new lead generation feels more urgent</li>
+    </ul>
+
+    <h2>What a proper AI reactivation campaign looks like</h2>
+    <p>An effective cold lead reactivation campaign uses AI to personalise each message to the lead's specific context — their industry, the problem they originally described, how long ago they went cold, and what has changed since.</p>
+    <p>The ideal 3-message sequence:</p>
+    <ul>
+      <li><strong>Message 1 — The relevant reconnect:</strong> "Hi [Name], we spoke [X months] ago about [specific problem]. I know the timing wasn't right then — I wanted to check if anything has changed on your end?"</li>
+      <li><strong>Message 2 — The proof point:</strong> "Since we last spoke, we've helped [similar company in their industry] solve [their exact problem]. Thought you'd find this relevant."</li>
+      <li><strong>Message 3 — The open door:</strong> "Last message from me — if this isn't a priority right now, completely understood. Just let me know when might be a better time and I'll reach out then."</li>
+    </ul>
+    <p>This sequence, sent over 30 days, consistently converts 8–12% of cold leads back into active opportunities. For a database of 500 cold leads with an average deal size of ₹50,000, that's <strong>40–60 new opportunities worth ₹20–30 lakhs</strong> — from leads you had completely written off.</p>
+
+    <h2>The segmentation factor</h2>
+    <p>Not all cold leads are equal. Before running a reactivation campaign, segment your database by:</p>
+    <ul>
+      <li><strong>Time since last contact:</strong> Leads cold for 30–90 days respond very differently from leads cold for 12+ months</li>
+      <li><strong>Original deal size:</strong> High-value leads deserve more personalised outreach</li>
+      <li><strong>Reason for going cold:</strong> Budget issue vs. timing issue vs. wrong contact — each needs a different angle</li>
+      <li><strong>Industry:</strong> Personalise the proof point in Message 2 to their specific sector</li>
+    </ul>
+
+    <div class="highlight-box">
+      <div class="hb-label">Rule of thumb</div>
+      <p>If a lead showed genuine interest at any point — asked about pricing, requested a demo, forwarded your email to a colleague — they belong in your reactivation campaign regardless of how long they've been cold. Genuine interest doesn't expire. It just waits for the right moment.</p>
+    </div>
+
+    <h2>Making it automatic</h2>
+    <p>The biggest challenge with cold lead reactivation is consistency. Manual campaigns fail because they require ongoing effort from your team. The solution is to make it fully automatic:</p>
+    <ul>
+      <li>Any lead that scores below 30 and hasn't been contacted in 30 days automatically enters the reactivation sequence</li>
+      <li>AI personalises each message based on the lead's profile and industry</li>
+      <li>Sequence runs automatically over 30 days with no rep involvement</li>
+      <li>When a lead replies, it's flagged immediately and a rep is alerted</li>
+    </ul>
+    <p>This means your cold lead database is constantly being worked — in the background, automatically, without consuming any of your team's time. Every week, some percentage of those cold leads wake up and come back to life.</p>
+  </div>
+  <div class="article-cta">
+    <h3>Revvr reactivates your cold leads automatically</h3>
+    <p>Every week, Revvr scans your database for cold leads and runs AI-personalised reactivation sequences. Found money from your graveyard.</p>
+    <a href="/demo" target="_blank">See it in action →</a>
+  </div>
+</div>
+
+<div id="article-3" class="article-wrap">
+  <button class="back-btn" onclick="showList()">← Back to blog</button>
+  <div class="article-cat">CRM & Tools</div>
+  <h1 class="article-title">Why your sales team stopped using the CRM — and what actually works instead</h1>
+  <div class="article-meta"><span>February 2026</span><span>·</span><span>5 min read</span><span>·</span><span class="blog-read">Revvr Team</span></div>
+  <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80" alt="Article" class="article-img"/>
+  <div class="article-body">
+    <p>The pattern is almost universal across Indian B2B sales teams. The company buys a CRM — HubSpot, Salesforce, Zoho, or one of the dozens of alternatives. There's an onboarding session. Leadership insists everyone use it. For the first few weeks, adoption is decent. Then slowly, inevitably, it falls apart.</p>
+    <p>Six months later, the CRM has 30% of the actual leads in it. The data is months out of date. Reps are keeping their real pipeline in WhatsApp messages and personal notebooks. The sales head is flying blind.</p>
+
+    <h2>Why CRM adoption fails — the honest answer</h2>
+    <p>The standard explanation is "change management" or "user training." But the real answer is simpler and more uncomfortable: <strong>updating a CRM requires effort that adds no value to the person doing the updating.</strong></p>
+    <p>When a rep finishes a meeting, they have a choice. They can open the CRM, find the contact, update the stage, add meeting notes, schedule the next followup, and log the call. Or they can move on to their next task. From the rep's perspective, CRM updates help management — they don't help the rep close deals faster.</p>
+    <p>This is a fundamental misalignment of incentives, and no amount of training resolves it.</p>
+
+    <blockquote>"We spent ₹8 lakhs on a Salesforce implementation. A year later, our best reps were still keeping their pipeline in Excel because it was faster for them. The CRM had become an administrative burden." — CTO, Delhi B2B software company</blockquote>
+
+    <h2>The specific failure modes</h2>
+    <p>CRM adoption typically fails in predictable ways:</p>
+    <ul>
+      <li><strong>Post-meeting data entry:</strong> Reps don't have time to update the CRM right after a meeting, and by the evening they've forgotten the details</li>
+      <li><strong>Stage management:</strong> Moving deals through pipeline stages feels bureaucratic and doesn't align with how reps actually think about their deals</li>
+      <li><strong>Activity logging:</strong> Manually logging calls, emails, and WhatsApp messages is tedious and inconsistent</li>
+      <li><strong>Contact management:</strong> Keeping contact information updated is a constant, thankless task</li>
+    </ul>
+
+    <h2>What works — automatic CRM population</h2>
+    <p>The teams with the best CRM adoption rates aren't the ones with the best training programs. They're the ones where the CRM updates itself automatically based on actual sales activity.</p>
+    <p>This means:</p>
+    <ul>
+      <li>When a followup WhatsApp is sent, it's logged automatically</li>
+      <li>When a proposal is generated, it's saved to the lead record automatically</li>
+      <li>When a lead replies, the CRM stage updates automatically</li>
+      <li>When a meeting happens, notes are captured and stored automatically</li>
+    </ul>
+    <p>Reps don't update the CRM. The system does it for them. Their job is just to do the actual sales work — the CRM becomes a byproduct of that work, not an additional administrative task on top of it.</p>
+
+    <h2>The simpler starting point — Google Sheets</h2>
+    <p>For teams that are struggling with CRM adoption, the answer is often not a better CRM — it's starting simpler. A well-structured Google Sheet that automatically syncs with your sales activity can give you 80% of the pipeline visibility of a full CRM with 20% of the complexity.</p>
+    <p>The key is that the Sheet must populate automatically. If reps have to update it manually, it will suffer the same adoption problems as any other CRM.</p>
+
+    <div class="highlight-box">
+      <div class="hb-label">The principle</div>
+      <p>CRM adoption improves dramatically when data flows into the system as a byproduct of sales activities — not as a separate administrative task. Any system that requires reps to "remember to update it" will eventually fail.</p>
+    </div>
+
+    <h2>Starting fresh — the right approach</h2>
+    <p>If you're implementing a new sales tracking system, or trying to revive a failed CRM implementation, follow this sequence:</p>
+    <ol>
+      <li>Start with automatic data capture — connect your email, WhatsApp, and calling tool so activity logs itself</li>
+      <li>Build a simple pipeline view that matches how your reps actually think about their deals</li>
+      <li>Add automation rules that move deals through stages based on triggers, not manual updates</li>
+      <li>Create a daily/weekly report for the sales head that comes from the system automatically</li>
+    </ol>
+    <p>The goal is a system where the sales head has complete pipeline visibility, and the reps have done zero extra administrative work to provide that visibility. That's the only version of CRM adoption that actually sticks.</p>
+  </div>
+  <div class="article-cta">
+    <h3>Revvr updates your CRM automatically</h3>
+    <p>Every followup, proposal, and interaction is logged without your reps lifting a finger. Your pipeline stays accurate with zero admin work.</p>
+    <a href="/demo" target="_blank">See how it works →</a>
+  </div>
+</div>
+
+<div id="article-4" class="article-wrap">
+  <button class="back-btn" onclick="showList()">← Back to blog</button>
+  <div class="article-cat">Pipeline Management</div>
+  <h1 class="article-title">The Monday morning problem: why Indian sales heads have zero pipeline visibility</h1>
+  <div class="article-meta"><span>February 2026</span><span>·</span><span>4 min read</span><span>·</span><span class="blog-read">Revvr Team</span></div>
+  <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=80" alt="Article" class="article-img"/>
+  <div class="article-body">
+    <p>It's Monday morning. You're a sales head at a growing Indian B2B company. You open your laptop and ask yourself the question you ask every week: <strong>What is actually happening in our pipeline right now?</strong></p>
+    <p>To answer this question, you have to ping three different reps on WhatsApp, check a spreadsheet that was last updated four days ago, scroll through a CRM with incomplete data, and sit through a 45-minute pipeline review meeting where you're still not sure who's telling you the truth.</p>
+    <p>By the time you have a reasonable picture of your pipeline, it's 11am. You've spent three hours on something that should take three minutes.</p>
+
+    <h2>This is not a small problem</h2>
+    <p>Pipeline visibility is not just a management convenience. It directly affects revenue. When a sales head doesn't know what's happening in the pipeline, they can't:</p>
+    <ul>
+      <li>Identify which deals are at risk before they're lost</li>
+      <li>Reallocate resources to where they're needed most</li>
+      <li>Forecast accurately for the quarter</li>
+      <li>Coach reps on specific deals before they go cold</li>
+      <li>Escalate on stuck deals before the window closes</li>
+    </ul>
+    <p>In fast-moving B2B sales, a week of blind spots can cost you several large deals. And most Indian sales heads are operating with weeks — sometimes months — of blind spots because their pipeline data is always stale.</p>
+
+    <blockquote>"I found out we lost a ₹4 lakh deal only when the client told our CEO at an industry event. The rep had stopped following up three weeks earlier and never told anyone. We had no idea." — Sales VP, Chennai technology company</blockquote>
+
+    <h2>Why pipeline data is always stale</h2>
+    <p>The reason sales heads lack visibility isn't that their reps are hiding information. It's that the pipeline data collection system requires manual effort from people who are too busy to provide it consistently.</p>
+    <p>Every reporting system that depends on reps updating it manually will produce stale data. This is a fundamental design flaw, not a discipline problem. The solution is to make pipeline data collection automatic — so the data is always current, always accurate, and available to the sales head in real time without any effort from the team.</p>
+
+    <h2>What real-time pipeline visibility looks like</h2>
+    <p>When pipeline data is collected automatically, a sales head can know — at any moment, without asking anyone — exactly what is happening across every deal:</p>
+    <ul>
+      <li>Which leads have been contacted in the last 48 hours and which haven't</li>
+      <li>Which deals have a high lead score but haven't been called recently</li>
+      <li>Which proposals have been sent and whether they've been opened</li>
+      <li>Which followup sequences are running and what responses have come in</li>
+      <li>How many new leads entered the pipeline this week vs. last week</li>
+    </ul>
+    <p>This isn't a dream — it's what happens when your sales automation system logs every action automatically and presents it in a real-time dashboard.</p>
+
+    <h2>The weekly report as a habit-builder</h2>
+    <p>Even with real-time dashboards available, a well-formatted weekly report delivered at a consistent time is one of the most valuable tools a sales head can have. When your Monday morning starts with a WhatsApp message that says:</p>
+    <ul>
+      <li>12 followups sent last week, 7 replies received</li>
+      <li>3 hot leads that need a call today</li>
+      <li>2 proposals opened multiple times — strong buying signal</li>
+      <li>4 deals at risk — not contacted in 5+ days</li>
+      <li>Total pipeline value: ₹24 lakhs across 18 active deals</li>
+    </ul>
+    <p>...you can start your week with clarity instead of confusion. You know exactly where to focus your energy. You can have targeted conversations with reps about specific deals. You can intervene on at-risk deals before they're lost.</p>
+
+    <div class="highlight-box">
+      <div class="hb-label">The shift</div>
+      <p>The difference between reactive and proactive sales leadership is pipeline visibility. Reactive leaders find out about lost deals after they're gone. Proactive leaders see deals going cold in real time and intervene before they're lost. The only thing separating these two modes is data — and whether that data is collected automatically or manually.</p>
+    </div>
+
+    <h2>Building the right reporting system</h2>
+    <p>If you want to solve the Monday morning problem, here's where to start:</p>
+    <ol>
+      <li>Define the 5–7 metrics that matter most to you as a sales head</li>
+      <li>Build a system that captures these metrics automatically from actual sales activity</li>
+      <li>Set up a scheduled report that delivers these metrics to you at the same time every week</li>
+      <li>Use the report to drive your Monday team check-in — eliminating the need for reps to "report up" manually</li>
+    </ol>
+    <p>The goal is a Monday morning where you already know the answers before you even open your laptop. Where the data comes to you, automatically, accurately, and on time — every single week.</p>
+  </div>
+  <div class="article-cta">
+    <h3>Get your Monday morning pipeline report automatically</h3>
+    <p>Revvr sends you a complete pipeline summary every Monday at 8am — hot leads, deals at risk, followups sent, revenue recovered. Automatically.</p>
+    <a href="/demo" target="_blank">Try Revvr live →</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">revvr<em>.</em></div>
+  <div class="footer-links">
+    <a href="/" target="_blank">Home</a>
+    <a href="/demo" target="_blank">Live Demo</a>
+    <a href="/cdn-cgi/l/email-protection#b6ded3dadad9f6c4d3c0c0c498dfd8"><span class="__cf_email__" data-cfemail="c8a0ada4a4a788baadbebebae6a1a6">[email&#160;protected]</span></a>
+  </div>
+  <div class="footer-note">© 2026 Revvr · revvr.app</div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ── CURSOR ── */
+const cur=document.getElementById('bcursor');
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+document.querySelectorAll('a,button,.blog-card,.testi,.price-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.classList.add('big'));
+  el.addEventListener('mouseleave',()=>cur.classList.remove('big'));
+});
+
+/* ── SCROLL REVEALS ── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);}});
+},{threshold:.08});
+document.querySelectorAll('.reveal,.stagger').forEach(el=>obs.observe(el));
+
+/* ── ARTICLE NAVIGATION ── */
+function showArticle(idx){
+  document.getElementById('blog-list-view').style.display='none';
+  document.querySelectorAll('.article-wrap').forEach(a=>a.classList.remove('active'));
+  document.getElementById('article-'+idx).classList.add('active');
+  window.scrollTo(0,0);
+}
+function showList(){
+  document.getElementById('blog-list-view').style.display='block';
+  document.querySelectorAll('.article-wrap').forEach(a=>a.classList.remove('active'));
+  window.scrollTo(0,0);
+  setTimeout(()=>{
+    document.querySelectorAll('.reveal,.stagger').forEach(el=>{
+      el.classList.remove('on');
+      obs.observe(el);
+    });
+  },50);
+}
+</script>
+</body>
+</html>

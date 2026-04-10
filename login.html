@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revvr — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0a0a0f;--ink-2:#2d2d3a;--ink-3:#6b6b80;
+  --paper:#fafaf7;--paper-2:#f2f2ee;--paper-3:#e4e4de;
+  --accent:#ff4d1c;--accent-l:#fff0ec;--accent-d:#d93a0c;
+  --teal:#0d9488;--teal-l:#e0f7f5;--teal-d:#0a7060;
+  --r:14px;--rs:8px;
+}
+html,body{height:100%;}
+body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--ink);line-height:1.6;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;}
+
+/* ── BACKGROUND ORBS ── */
+.bg-orb{position:absolute;border-radius:50%;pointer-events:none;opacity:.06;}
+.orb-1{width:500px;height:500px;background:var(--accent);top:-120px;right:-100px;animation:orbFloat 9s ease-in-out infinite alternate;}
+.orb-2{width:380px;height:380px;background:var(--teal);bottom:-80px;left:-80px;animation:orbFloat 11s ease-in-out infinite alternate-reverse;}
+.orb-3{width:200px;height:200px;background:var(--accent);bottom:30%;left:30%;animation:orbFloat 7s ease-in-out infinite alternate;}
+@keyframes orbFloat{from{transform:translate(0,0);}to{transform:translate(16px,16px);}}
+
+/* ── CARD ── */
+.card{background:var(--paper);border-radius:24px;width:100%;max-width:420px;padding:2.5rem;position:relative;z-index:1;animation:cardIn .6s cubic-bezier(.22,1,.36,1) both;}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:none;}}
+
+/* ── BRAND ── */
+.brand-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+.brand{font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-1px;text-decoration:none;}
+.brand em{font-style:normal;color:var(--accent);}
+.back-link{font-size:12px;color:var(--ink-3);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .2s;}
+.back-link:hover{color:var(--ink);}
+
+/* ── VIEWS ── */
+.view{display:none;}
+.view.active{display:block;animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* ── EMAIL STATE ── */
+.login-title{font-family:'Instrument Serif',serif;font-size:30px;font-weight:400;color:var(--ink);line-height:1.15;margin-bottom:.5rem;}
+.login-title i{font-style:italic;color:var(--accent);}
+.login-sub{font-size:14px;color:var(--ink-3);margin-bottom:1.75rem;line-height:1.6;}
+.input-group{margin-bottom:14px;}
+.input-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:5px;display:block;}
+.email-input{width:100%;padding:13px 16px;border:1.5px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:15px;color:var(--ink);background:var(--paper-2);outline:none;transition:all .2s;}
+.email-input:focus{border-color:var(--accent);background:#fff;}
+.email-input::placeholder{color:var(--ink-3);}
+.email-input.error{border-color:#dc2626;background:#fff5f5;}
+.submit-btn{width:100%;padding:14px;border-radius:100px;background:var(--accent);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.02em;}
+.submit-btn:hover:not(:disabled){background:var(--accent-d);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,77,28,.25);}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none;}
+.error-msg{font-size:12px;color:#dc2626;margin-top:6px;display:none;}
+.error-msg.show{display:block;}
+.divider{display:flex;align-items:center;gap:10px;margin:1.25rem 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--paper-3);}
+.divider span{font-size:12px;color:var(--ink-3);}
+.google-btn{width:100%;padding:12px;border-radius:var(--rs);border:1.5px solid var(--paper-3);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:600;color:var(--ink-2);transition:all .2s;font-family:'Outfit',sans-serif;}
+.google-btn:hover{border-color:var(--ink-3);background:var(--paper-2);}
+.terms{font-size:11px;color:var(--ink-3);text-align:center;margin-top:1rem;line-height:1.6;}
+.terms a{color:var(--ink-3);text-decoration:underline;}
+
+/* ── SENT STATE ── */
+.sent-icon{width:64px;height:64px;border-radius:50%;background:var(--teal-l);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;animation:popIn .5s cubic-bezier(.22,1,.36,1);}
+@keyframes popIn{from{transform:scale(0);}to{transform:scale(1);}}
+.sent-title{font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;color:var(--ink);text-align:center;margin-bottom:.5rem;font-style:italic;}
+.sent-sub{font-size:14px;color:var(--ink-3);text-align:center;line-height:1.7;margin-bottom:1.5rem;}
+.sent-email-badge{background:var(--paper-2);border:1px solid var(--paper-3);border-radius:100px;padding:8px 18px;font-size:14px;font-weight:600;color:var(--ink);text-align:center;margin:0 auto 1.5rem;display:block;width:fit-content;}
+.steps-mini{background:var(--paper-2);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1.5rem;}
+.steps-mini-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:.75rem;}
+.step-mini{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;color:var(--ink-2);}
+.step-mini:last-child{margin-bottom:0;}
+.step-mini-dot{width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.resend-btn{width:100%;padding:12px;border-radius:100px;border:1.5px solid var(--paper-3);background:transparent;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;transition:all .2s;}
+.resend-btn:hover{border-color:var(--ink-3);color:var(--ink);}
+.resend-countdown{font-size:12px;color:var(--ink-3);text-align:center;margin-top:.5rem;}
+.wrong-email{font-size:12px;color:var(--ink-3);text-align:center;margin-top:.75rem;}
+.wrong-email a{color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer;}
+.wrong-email a:hover{text-decoration:underline;}
+
+/* ── VERIFYING STATE ── */
+.verify-icon{width:64px;height:64px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;animation:spinPop .6s ease;}
+@keyframes spinPop{from{transform:scale(0) rotate(-180deg);}to{transform:scale(1) rotate(0);}}
+.spinner{width:28px;height:28px;border:3px solid rgba(255,77,28,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── SUCCESS STATE ── */
+.success-icon{width:64px;height:64px;border-radius:50%;background:var(--teal-l);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;animation:popIn .5s cubic-bezier(.22,1,.36,1);}
+
+/* ── FOOTER ── */
+.card-footer{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--paper-3);display:flex;justify-content:center;gap:1.5rem;}
+.card-footer a{font-size:12px;color:var(--ink-3);text-decoration:none;transition:color .2s;}
+.card-footer a:hover{color:var(--ink);}
+
+/* ── TRUST BADGES ── */
+.trust-row{display:flex;justify-content:center;gap:1.5rem;margin-top:1rem;flex-wrap:wrap;}
+.trust-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-3);}
+
+/* ── SPINNER BUTTON STATE ── */
+.btn-spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.submit-btn.loading .btn-text{display:none;}
+.submit-btn.loading .btn-spinner{display:block;}
+.submit-btn.loading .btn-arrow{display:none;}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND ORBS -->
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+<div class="bg-orb orb-3"></div>
+
+<div class="card">
+
+  <!-- BRAND ROW -->
+  <div class="brand-row">
+    <a href="/" target="_blank" class="brand">revvr<em>.</em></a>
+    <a href="/" target="_blank" class="back-link">← Back to home</a>
+  </div>
+
+  <!-- ── VIEW 1: EMAIL INPUT ── -->
+  <div class="view active" id="view-email">
+    <h1 class="login-title">Welcome back.<br>Let's get you <i>in.</i></h1>
+    <p class="login-sub">Enter your work email and we'll send you a magic link — no password needed.</p>
+
+    <div class="input-group">
+      <label class="input-label" for="email-field">Work email</label>
+      <input
+        type="email"
+        id="email-field"
+        class="email-input"
+        placeholder="rahul@company.com"
+        autocomplete="email"
+        autofocus
+      />
+      <div class="error-msg" id="email-error">Please enter a valid work email address.</div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="sendMagicLink()">
+      <span class="btn-text">Send magic link</span>
+      <span class="btn-arrow">→</span>
+      <div class="btn-spinner"></div>
+    </button>
+
+    <div class="divider"><span>or continue with</span></div>
+
+    <button class="google-btn" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <p class="terms">By continuing you agree to Revvr's <a href="revvr-legal.html" target="_blank">Terms of Service</a> and <a href="revvr-legal.html" target="_blank">Privacy Policy</a></p>
+
+    <div class="trust-row">
+      <div class="trust-badge">🔒 No password ever</div>
+      <div class="trust-badge">✓ Secure magic link</div>
+      <div class="trust-badge">⚡ Login in 30 seconds</div>
+    </div>
+  </div>
+
+  <!-- ── VIEW 2: MAGIC LINK SENT ── -->
+  <div class="view" id="view-sent">
+    <div class="sent-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <path d="M3 6l11 8 11-8" stroke="#0d9488" stroke-width="2" stroke-linecap="round"/>
+        <rect x="3" y="6" width="22" height="16" rx="3" stroke="#0d9488" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+    <div class="sent-title">Check your inbox</div>
+    <p class="sent-sub">We sent a magic link to:</p>
+    <span class="sent-email-badge" id="sent-email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dba9bab3aeb79bb8b4b6abbab5a2f5b8b4b6">[email&#160;protected]</a></span>
+
+    <div class="steps-mini">
+      <div class="steps-mini-title">What to do next</div>
+      <div class="step-mini"><div class="step-mini-dot">1</div>Open your email inbox</div>
+      <div class="step-mini"><div class="step-mini-dot">2</div>Find the email from <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="345c5158585b7446514242461a5d5a">[email&#160;protected]</a></div>
+      <div class="step-mini"><div class="step-mini-dot">3</div>Click "Open my dashboard" button</div>
+      <div class="step-mini"><div class="step-mini-dot">4</div>You'll be logged in instantly</div>
+    </div>
+
+    <button class="resend-btn" id="resend-btn" onclick="resendLink()" disabled>
+      Resend magic link
+    </button>
+    <div class="resend-countdown" id="resend-countdown">You can resend in <strong id="countdown-num">30</strong>s</div>
+
+    <div class="wrong-email">Wrong email? <a onclick="switchView('view-email')">Try a different one</a></div>
+  </div>
+
+  <!-- ── VIEW 3: VERIFYING TOKEN ── -->
+  <div class="view" id="view-verifying">
+    <div class="verify-icon">
+      <div class="spinner"></div>
+    </div>
+    <div class="sent-title" style="text-align:center;">Verifying your link</div>
+    <p class="sent-sub" style="text-align:center;">Logging you in securely. This takes just a second…</p>
+  </div>
+
+  <!-- ── VIEW 4: SUCCESS ── -->
+  <div class="view" id="view-success">
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <path d="M5 14l7 7 11-11" stroke="#0d9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="sent-title" style="text-align:center;">You're in!</div>
+    <p class="sent-sub" style="text-align:center;">Taking you to your dashboard now…</p>
+    <div style="height:4px;background:var(--paper-2);border-radius:2px;overflow:hidden;margin-top:1rem;">
+      <div id="redirect-bar" style="height:100%;width:0%;background:var(--accent);border-radius:2px;transition:width 2s linear;"></div>
+    </div>
+  </div>
+
+  <!-- ── VIEW 5: ERROR ── -->
+  <div class="view" id="view-error">
+    <div style="width:64px;height:64px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <path d="M14 9v6M14 18v1" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="11" stroke="#dc2626" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+    <div class="sent-title" style="text-align:center;color:#dc2626;">Link expired</div>
+    <p class="sent-sub" style="text-align:center;" id="error-detail">This magic link has expired or already been used. Magic links are valid for 24 hours and can only be clicked once.</p>
+    <button class="submit-btn" onclick="switchView('view-email')" style="margin-top:.5rem;">
+      <span class="btn-text">Request a new link</span>
+      <span class="btn-arrow">→</span>
+    </button>
+  </div>
+
+  <!-- CARD FOOTER -->
+  <div class="card-footer">
+    <a href="/" target="_blank">Home</a>
+    <a href="/demo" target="_blank">Live demo</a>
+    <a href="/#pricing" target="_blank">Pricing</a>
+    <a href="/cdn-cgi/l/email-protection#90f8f5fcfcffd0e2f5e6e6e2bef9fe">Help</a>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ── SUPABASE CONFIG ── */
+const SUPABASE_URL = 'https://mitmfnjqpndfrjwruhxw.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_7GwXw-edEyNU0EIzWS_WoA_pEffwYhO'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+let currentEmail = ''
+let countdownTimer = null
+
+/* ── VIEW SWITCHER ── */
+function switchView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+}
+
+/* ── SEND MAGIC LINK ── */
+async function sendMagicLink() {
+  const emailField = document.getElementById('email-field')
+  const errorMsg = document.getElementById('email-error')
+  const btn = document.getElementById('submit-btn')
+  const email = emailField.value.trim().toLowerCase()
+
+  // Validate
+  emailField.classList.remove('error')
+  errorMsg.classList.remove('show')
+
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    emailField.classList.add('error')
+    errorMsg.classList.add('show')
+    emailField.focus()
+    return
+  }
+
+  // Loading state
+  btn.disabled = true
+  btn.classList.add('loading')
+  currentEmail = email
+
+  try {
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin + '//dashboard'
+      }
+    })
+
+    if (error) throw error
+
+    // Show sent state
+    document.getElementById('sent-email-display').textContent = email
+    switchView('view-sent')
+    startResendCountdown()
+
+  } catch (err) {
+    console.error('Magic link error:', err)
+    emailField.classList.add('error')
+    errorMsg.textContent = err.message || 'Something went wrong. Please try again.'
+    errorMsg.classList.add('show')
+  } finally {
+    btn.disabled = false
+    btn.classList.remove('loading')
+  }
+}
+
+/* ── RESEND COUNTDOWN ── */
+function startResendCountdown() {
+  let seconds = 30
+  const resendBtn = document.getElementById('resend-btn')
+  const countdownNum = document.getElementById('countdown-num')
+  const countdownDiv = document.getElementById('resend-countdown')
+
+  resendBtn.disabled = true
+  countdownDiv.style.display = 'block'
+
+  clearInterval(countdownTimer)
+  countdownTimer = setInterval(() => {
+    seconds--
+    countdownNum.textContent = seconds
+    if (seconds <= 0) {
+      clearInterval(countdownTimer)
+      resendBtn.disabled = false
+      countdownDiv.style.display = 'none'
+    }
+  }, 1000)
+}
+
+/* ── RESEND LINK ── */
+async function resendLink() {
+  const resendBtn = document.getElementById('resend-btn')
+  resendBtn.textContent = 'Sending…'
+  resendBtn.disabled = true
+
+  try {
+    await sb.auth.signInWithOtp({
+      email: currentEmail,
+      options: {
+        emailRedirectTo: window.location.origin + '//dashboard'
+      }
+    })
+    resendBtn.textContent = 'Sent! Check your inbox'
+    setTimeout(() => {
+      resendBtn.textContent = 'Resend magic link'
+      startResendCountdown()
+    }, 3000)
+  } catch (err) {
+    resendBtn.textContent = 'Resend magic link'
+    resendBtn.disabled = false
+  }
+}
+
+/* ── GOOGLE SIGN IN ── */
+async function signInWithGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin + '//dashboard'
+    }
+  })
+  if (error) console.error('Google sign in error:', error)
+}
+
+/* ── ENTER KEY SUPPORT ── */
+document.getElementById('email-field').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMagicLink()
+})
+
+/* ── HANDLE AUTH STATE CHANGES ── */
+/* This fires when a user clicks the magic link in their email */
+sb.auth.onAuthStateChange(async (event, session) => {
+  console.log('Auth event:', event)
+
+  if (event === 'SIGNED_IN' && session) {
+    switchView('view-verifying')
+
+    /* Small delay so verifying state is visible */
+    await new Promise(r => setTimeout(r, 1200))
+
+    switchView('view-success')
+
+    /* Animate progress bar then redirect */
+    setTimeout(() => {
+      document.getElementById('redirect-bar').style.width = '100%'
+    }, 50)
+
+    setTimeout(() => {
+      window.location.href = '/dashboard'
+    }, 2200)
+  }
+
+  if (event === 'TOKEN_REFRESHED') {
+    /* Already logged in — go straight to dashboard */
+    window.location.href = '/dashboard'
+  }
+})
+
+/* ── CHECK IF ALREADY LOGGED IN ── */
+async function checkExistingSession() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (session) {
+    window.location.href = '/dashboard'
+    return
+  }
+
+  // ── Pre-fill from URL params ──
+  const urlParams = new URLSearchParams(window.location.search)
+  const emailParam = urlParams.get('email')
+  const planParam = urlParams.get('plan')
+  const sourceParam = urlParams.get('source')
+
+  if (emailParam) {
+    document.getElementById('email-field').value = decodeURIComponent(emailParam)
+  }
+
+  // Show plan badge if coming from pricing
+  if (planParam) {
+    const planNames = {starter:'Starter — ₹25,000',growth:'Growth — ₹40,000',enterprise:'Enterprise — ₹75,000'}
+    const planBadge = document.createElement('div')
+    planBadge.style.cssText = 'background:var(--accent-l);border:1px solid rgba(255,77,28,.2);border-radius:var(--rs);padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;'
+    planBadge.innerHTML = '<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent-d);margin-bottom:2px;">Selected plan</div><div style="font-size:14px;font-weight:700;color:var(--ink);">'+(planNames[planParam]||planParam)+'</div></div><div style="font-size:11px;color:var(--ink-3);">One-time setup</div>'
+    document.querySelector('.login-sub').insertAdjacentElement('afterend', planBadge)
+  }
+
+  // Update title if coming from demo booking
+  if (sourceParam === 'demo_booking') {
+    document.querySelector('.login-title').innerHTML = 'Check your<br>email <i>inbox.</i>'
+    document.querySelector('.login-sub').textContent = "We're sending you a magic link to your dashboard. Enter your email below to receive it."
+  }
+
+  // Pre-fill from sessionStorage
+  if (!emailParam) {
+    try {
+      const lead = JSON.parse(sessionStorage.getItem('revvr_lead') || '{}')
+      if (lead.email) document.getElementById('email-field').value = lead.email
+    } catch(e) {}
+  }
+}
+checkExistingSession()
+
+/* ── DETECT MAGIC LINK TOKEN IN URL ── */
+/* When Supabase redirects back after clicking the email link,
+   there will be a token_hash in the URL — handle it */
+const urlParams = new URLSearchParams(window.location.search)
+const hashParams = new URLSearchParams(window.location.hash.substring(1))
+
+if (urlParams.get('token_hash') || hashParams.get('access_token')) {
+  switchView('view-verifying'

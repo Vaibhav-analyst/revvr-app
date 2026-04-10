@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revvr — Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0a0a0f;--ink-2:#2d2d3a;--ink-3:#6b6b80;
+  --paper:#fafaf7;--paper-2:#f2f2ee;--paper-3:#e4e4de;
+  --accent:#ff4d1c;--accent-l:#fff0ec;--accent-d:#d93a0c;
+  --teal:#0d9488;--teal-l:#e0f7f5;--teal-d:#0a7060;
+  --amber:#d97706;--amber-l:#fef3c7;
+  --red:#dc2626;--red-l:#fef2f2;
+  --green:#16a34a;--green-l:#f0fdf4;
+  --r:12px;--rs:8px;--rl:20px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:rgba(250,250,247,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--paper-3);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.brand{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;letter-spacing:-1px;color:var(--ink);cursor:pointer;}
+.brand span{color:var(--accent);}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:7px 16px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--ink-3);transition:all 0.2s;font-family:'Outfit',sans-serif;}
+.nav-tab:hover{background:var(--paper-2);color:var(--ink);}
+.nav-tab.active{background:var(--ink);color:#fff;}
+.nav-live{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--teal);}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(13,148,136,0.4);}50%{opacity:0.8;box-shadow:0 0 0 4px rgba(13,148,136,0);}}
+
+/* PAGES */
+.page{display:none;animation:fadeIn 0.3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── LANDING PAGE ── */
+.hero{max-width:900px;margin:0 auto;padding:4rem 2rem 3rem;text-align:center;}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:var(--accent-l);color:var(--accent-d);font-size:12px;font-weight:600;padding:5px 14px;border-radius:100px;margin-bottom:1.5rem;letter-spacing:0.05em;text-transform:uppercase;border:1px solid rgba(255,77,28,0.2);}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(36px,6vw,68px);font-weight:400;line-height:1.08;letter-spacing:-1.5px;margin-bottom:1.25rem;color:var(--ink);}
+.hero h1 .hi{font-style:italic;color:var(--accent);}
+.hero-sub{font-size:17px;color:var(--ink-3);max-width:520px;margin:0 auto 2rem;font-weight:400;line-height:1.75;}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:3rem;}
+.btn-p{background:var(--accent);color:#fff;border:none;padding:14px 28px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.25s;}
+.btn-p:hover{background:var(--accent-d);transform:translateY(-2px);}
+.btn-o{background:transparent;color:var(--ink-2);border:1.5px solid var(--paper-3);padding:14px 28px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.25s;}
+.btn-o:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-2px);}
+
+.stats-row{display:flex;max-width:580px;margin:0 auto;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;background:#fff;}
+.stat{flex:1;padding:1.25rem 0.75rem;text-align:center;border-right:1px solid var(--paper-3);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:'Instrument Serif',serif;font-size:34px;color:var(--ink);display:block;letter-spacing:-1px;line-height:1;margin-bottom:3px;}
+.stat-l{font-size:10px;color:var(--ink-3);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;line-height:1.4;}
+
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:900px;margin:3rem auto;padding:0 2rem;}
+.feat-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;transition:all 0.25s;cursor:pointer;}
+.feat-card:hover{transform:translateY(-3px);border-color:var(--accent);}
+.feat-icon{font-size:24px;margin-bottom:8px;}
+.feat-title{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:4px;}
+.feat-desc{font-size:12px;color:var(--ink-3);line-height:1.5;}
+
+.img-row{display:flex;gap:12px;max-width:900px;margin:0 auto;padding:0 2rem 3rem;overflow-x:auto;scrollbar-width:none;}
+.img-row::-webkit-scrollbar{display:none;}
+.img-r-card{flex-shrink:0;border-radius:var(--r);overflow:hidden;position:relative;}
+.img-r-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s;}
+.img-r-card:hover img{transform:scale(1.05);}
+.img-r-card.t{width:220px;height:260px;}
+.img-r-card.w{width:300px;height:180px;}
+.img-ov{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(10,10,15,0.7));padding:0.75rem;color:#fff;font-size:11px;font-weight:600;letter-spacing:0.04em;}
+
+/* ── DEMO PAGE ── */
+.demo-wrap{max-width:1100px;margin:0 auto;padding:2rem;}
+.demo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+.demo-title{font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;color:var(--ink);}
+.demo-subtitle{font-size:13px;color:var(--ink-3);margin-top:2px;}
+.mode-tabs{display:flex;gap:6px;background:var(--paper-2);padding:4px;border-radius:100px;}
+.mode-tab{padding:7px 18px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--ink-3);transition:all 0.2s;font-family:'Outfit',sans-serif;}
+.mode-tab.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+
+.demo-grid{display:grid;grid-template-columns:1fr 360px;gap:16px;}
+.demo-main{display:flex;flex-direction:column;gap:16px;}
+
+/* Pipeline Panel */
+.panel{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;}
+.panel-header{padding:1rem 1.25rem;border-bottom:1px solid var(--paper-3);display:flex;justify-content:space-between;align-items:center;}
+.panel-title{font-weight:700;font-size:14px;color:var(--ink);}
+.panel-sub{font-size:12px;color:var(--ink-3);}
+.panel-body{padding:1.25rem;}
+
+.lead-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--rs);transition:background 0.15s;cursor:pointer;border:1px solid transparent;}
+.lead-row:hover{background:var(--paper-2);border-color:var(--paper-3);}
+.lead-row.selected{background:var(--accent-l);border-color:rgba(255,77,28,0.3);}
+.lead-avatar{width:36px;height:36px;border-radius:50%;background:var(--paper-2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--ink-2);flex-shrink:0;}
+.lead-info{flex:1;min-width:0;}
+.lead-name{font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lead-company{font-size:11px;color:var(--ink-3);}
+.lead-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+.lead-amount{font-size:12px;font-weight:600;color:var(--ink);}
+.score-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;}
+.score-hot{background:var(--green-l);color:var(--green);}
+.score-warm{background:var(--amber-l);color:var(--amber);}
+.score-cold{background:var(--paper-2);color:var(--ink-3);}
+.lead-days{font-size:10px;color:var(--ink-3);}
+
+/* Stats mini cards */
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem;}
+.mini-stat{background:var(--paper-2);border-radius:var(--rs);padding:0.75rem;text-align:center;}
+.mini-stat-n{font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);display:block;font-weight:400;line-height:1;}
+.mini-stat-l{font-size:10px;color:var(--ink-3);font-weight:500;text-transform:uppercase;letter-spacing:0.04em;margin-top:2px;}
+
+/* AI Chat Panel */
+.chat-panel{display:flex;flex-direction:column;height:520px;}
+.chat-agent-header{padding:12px 16px;border-bottom:1px solid var(--paper-3);display:flex;align-items:center;gap:10px;}
+.agent-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--accent);font-family:'Outfit',sans-serif;}
+.agent-name{font-weight:700;font-size:13px;color:var(--ink);}
+.agent-status{font-size:11px;color:var(--teal);}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin;}
+.chat-messages::-webkit-scrollbar{width:4px;}
+.chat-messages::-webkit-scrollbar-track{background:transparent;}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--paper-3);border-radius:4px;}
+.msg{display:flex;gap:8px;align-items:flex-end;}
+.msg.user{flex-direction:row-reverse;}
+.msg-avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.msg-avatar.ai{background:var(--accent-l);color:var(--accent);}
+.msg-avatar.user{background:var(--ink);color:#fff;}
+.msg-bubble{max-width:82%;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.55;}
+.msg-bubble.ai{background:var(--paper-2);color:var(--ink);border-radius:0 12px 12px 12px;}
+.msg-bubble.user{background:var(--accent);color:#fff;border-radius:12px 12px 0 12px;}
+.msg-bubble pre{white-space:pre-wrap;font-family:'Outfit',sans-serif;font-size:12px;}
+.typing{display:flex;gap:3px;padding:2px 4px;}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--ink-3);animation:bounce 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:0.15s;}
+.typing span:nth-child(3){animation-delay:0.3s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-6px);}}
+
+.quick-btns{padding:8px 14px;border-top:1px solid var(--paper-3);display:flex;gap:6px;flex-wrap:wrap;}
+.qbtn{background:var(--paper-2);border:1px solid var(--paper-3);border-radius:100px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--ink-2);cursor:pointer;transition:all 0.2s;font-family:'Outfit',sans-serif;white-space:nowrap;}
+.qbtn:hover{background:var(--accent-l);border-color:rgba(255,77,28,0.3);color:var(--accent-d);}
+.chat-input-row{padding:10px 14px;border-top:1px solid var(--paper-3);display:flex;gap:8px;}
+.chat-inp{flex:1;border:1px solid var(--paper-3);border-radius:100px;padding:9px 16px;font-family:'Outfit',sans-serif;font-size:13px;outline:none;background:var(--paper-2);color:var(--ink);transition:border-color 0.2s;}
+.chat-inp:focus{border-color:var(--accent);background:#fff;}
+.chat-send{background:var(--accent);color:#fff;border:none;border-radius:100px;padding:9px 18px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.chat-send:hover{background:var(--accent-d);}
+.chat-send:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* Proposal Panel */
+.proposal-panel{display:none;}
+.proposal-panel.active{display:block;}
+.proposal-form{display:flex;flex-direction:column;gap:12px;margin-bottom:1rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em;}
+.form-input{border:1px solid var(--paper-3);border-radius:var(--rs);padding:9px 12px;font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);outline:none;background:var(--paper-2);transition:all 0.2s;}
+.form-input:focus{border-color:var(--accent);background:#fff;}
+.form-select{border:1px solid var(--paper-3);border-radius:var(--rs);padding:9px 12px;font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);outline:none;background:var(--paper-2);cursor:pointer;}
+.gen-btn{background:var(--ink);color:#fff;border:none;padding:12px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;width:100%;}
+.gen-btn:hover{background:var(--accent);}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.proposal-output{background:var(--paper-2);border-radius:var(--rs);padding:1.25rem;font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-wrap;min-height:200px;border:1px solid var(--paper-3);}
+.proposal-actions{display:flex;gap:8px;margin-top:10px;}
+.prop-btn{flex:1;padding:9px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;border:1px solid var(--paper-3);background:transparent;color:var(--ink);}
+.prop-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Followup Panel */
+.followup-panel{display:none;}
+.followup-panel.active{display:block;}
+.followup-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;}
+.fu-item{background:var(--paper-2);border:1px solid var(--paper-3);border-radius:var(--rs);padding:1rem;cursor:pointer;transition:all 0.2s;}
+.fu-item:hover{border-color:var(--accent);}
+.fu-item.selected{border-color:var(--accent);background:var(--accent-l);}
+.fu-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.fu-name{font-weight:700;font-size:13px;color:var(--ink);}
+.fu-day{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;}
+.fu-day-1{background:#dbeafe;color:#1d4ed8;}
+.fu-day-3{background:var(--green-l);color:var(--green);}
+.fu-day-7{background:var(--amber-l);color:var(--amber);}
+.fu-day-14{background:var(--red-l);color:var(--red);}
+.fu-preview{font-size:12px;color:var(--ink-3);line-height:1.4;}
+.fu-output{background:#fff;border:1px solid var(--paper-3);border-radius:var(--rs);padding:1rem;font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-wrap;min-height:160px;}
+.fu-actions{display:flex;gap:8px;margin-top:10px;}
+.fu-btn{flex:1;padding:9px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;border:1px solid var(--paper-3);background:transparent;color:var(--ink);}
+.fu-btn:hover{border-color:var(--teal);color:var(--teal);}
+.fu-btn.primary{background:var(--teal);color:#fff;border-color:var(--teal);}
+.fu-btn.primary:hover{background:var(--teal-d);}
+
+/* Scoring Panel */
+.score-panel{display:none;}
+.score-panel.active{display:block;}
+.score-detail{background:#fff;border:1px solid var(--paper-3);border-radius:var(--rs);padding:1.25rem;}
+.score-ring-wrap{display:flex;align-items:center;gap:1.5rem;margin-bottom:1.25rem;}
+.score-ring{width:80px;height:80px;position:relative;flex-shrink:0;}
+.score-ring svg{transform:rotate(-90deg);}
+.score-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-ring-num{font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);line-height:1;}
+.score-ring-txt{font-size:9px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;}
+.score-breakdown{flex:1;}
+.score-factor{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--paper-3);font-size:12px;}
+.score-factor:last-child{border-bottom:none;}
+.score-factor-name{color:var(--ink-2);}
+.score-factor-val{font-weight:700;color:var(--green);}
+.score-rec{background:var(--green-l);border:1px solid rgba(22,163,74,0.2);border-radius:var(--rs);padding:0.75rem;font-size:12px;color:var(--ink-2);line-height:1.6;}
+.score-rec strong{color:var(--green);font-weight:700;}
+
+/* ── PRICING PAGE ── */
+.pricing-wrap{max-width:900px;margin:0 auto;padding:3rem 2rem;text-align:center;}
+.pricing-wrap h2{font-family:'Instrument Serif',serif;font-size:clamp(28px,5vw,44px);font-weight:400;color:var(--ink);margin-bottom:0.75rem;letter-spacing:-0.5px;}
+.pricing-wrap p{font-size:16px;color:var(--ink-3);margin-bottom:2.5rem;}
+.pricing-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:2rem;}
+.pc{background:#fff;border:1.5px solid var(--paper-3);border-radius:var(--r);padding:1.75rem;transition:transform 0.2s;position:relative;text-align:left;}
+.pc:hover{transform:translateY(-4px);}
+.pc.pop{border-color:var(--accent);}
+.pc-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 14px;border-radius:100px;white-space:nowrap;}
+.pc-tier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-3);margin-bottom:3px;}
+.pc-team{font-size:12px;color:var(--ink-3);margin-bottom:1rem;}
+.pc-price{font-family:'Instrument Serif',serif;font-size:42px;color:var(--ink);letter-spacing:-1.5px;line-height:1;margin-bottom:2px;}
+.pc-note{font-size:11px;color:var(--ink-3);margin-bottom:1.25rem;}
+.pc-feats{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:1.5rem;}
+.pc-feats li{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:7px;}
+.pc-feats li::before{content:'✓';color:var(--teal);font-weight:800;font-size:12px;flex-shrink:0;}
+.pc-btn{width:100%;padding:11px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;border:1.5px solid var(--paper-3);background:transparent;color:var(--ink);}
+.pc-btn:hover{border-color:var(--accent);color:var(--accent);}
+.pc-btn.pop-btn{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pc-btn.pop-btn:hover{background:var(--accent-d);}
+.roi-banner{background:var(--accent-l);border:1px solid rgba(255,77,28,0.2);border-radius:var(--r);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;}
+.roi-banner-text h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--accent-d);font-style:italic;margin-bottom:3px;}
+.roi-banner-text p{font-size:13px;color:var(--ink-3);}
+.roi-banner-nums{display:flex;gap:1.5rem;}
+.roi-num-item{text-align:center;}
+.roi-num-val{font-family:'Instrument Serif',serif;font-size:26px;color:var(--accent-d);display:block;line-height:1;}
+.roi-num-lbl{font-size:11px;color:var(--ink-3);margin-top:2px;}
+
+/* ── CONTACT PAGE ── */
+.contact-wrap{max-width:600px;margin:0 auto;padding:3rem 2rem;}
+.contact-wrap h2{font-family:'Instrument Serif',serif;font-size:clamp(26px,4vw,38px);font-weight:400;color:var(--ink);margin-bottom:0.5rem;}
+.contact-wrap p{font-size:15px;color:var(--ink-3);margin-bottom:2rem;line-height:1.7;}
+.contact-form{display:flex;flex-direction:column;gap:14px;}
+.cf-group{display:flex;flex-direction:column;gap:5px;}
+.cf-label{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.05em;}
+.cf-input{border:1.5px solid var(--paper-3);border-radius:var(--rs);padding:11px 14px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--ink);outline:none;background:#fff;transition:border-color 0.2s;}
+.cf-input:focus{border-color:var(--accent);}
+.cf-select{border:1.5px solid var(--paper-3);border-radius:var(--rs);padding:11px 14px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--ink);outline:none;background:#fff;cursor:pointer;}
+.cf-textarea{border:1.5px solid var(--paper-3);border-radius:var(--rs);padding:11px 14px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--ink);outline:none;background:#fff;resize:vertical;min-height:100px;transition:border-color 0.2s;}
+.cf-textarea:focus{border-color:var(--accent);}
+.cf-submit{background:var(--accent);color:#fff;border:none;padding:14px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.cf-submit:hover{background:var(--accent-d);transform:translateY(-1px);}
+.cf-success{background:var(--green-l);border:1px solid rgba(22,163,74,0.3);border-radius:var(--r);padding:1.5rem;text-align:center;display:none;}
+.cf-success-icon{font-size:32px;margin-bottom:8px;}
+.cf-success h3{font-family:'Instrument Serif',serif;font-size:22px;color:var(--green);margin-bottom:6px;}
+.cf-success p{font-size:14px;color:var(--ink-3);}
+.contact-info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:2rem;}
+.ci-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;text-align:center;}
+.ci-icon{font-size:22px;margin-bottom:6px;}
+.ci-label{font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;}
+.ci-val{font-size:14px;font-weight:600;color:var(--ink);}
+
+/* UTILITY */
+.divider{max-width:900px;margin:0 auto;padding:0 2rem;border-top:1px solid var(--paper-3);}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;letter-spacing:0.03em;}
+.tag-orange{background:var(--accent-l);color:var(--accent-d);}
+.tag-teal{background:var(--teal-l);color:var(--teal-d);}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:2rem;color:var(--ink-3);font-size:13px;}
+
+@media(max-width:768px){
+  .demo-grid{grid-template-columns:1fr;}
+  .features-grid,.pricing-cards,.form-row{grid-template-columns:1fr;}
+  .nav-tabs{display:none;}
+  .contact-info{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" target="_blank" class="brand" style="text-decoration:none;">revvr<span>.</span></a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('home')" id="tab-home">Home</button>
+    <button class="nav-tab" onclick="showPage('demo')" id="tab-demo">Live Demo</button>
+    <button class="nav-tab" onclick="showPage('pricing')" id="tab-pricing">Pricing</button>
+    <button class="nav-tab" onclick="showPage('contact')" id="tab-contact">Book Demo</button>
+  </div>
+  <div class="nav-live"><div class="live-dot"></div>AI Powered</div>
+</nav>
+
+<!-- ═══════════ HOME PAGE ═══════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-badge"><div class="badge-dot"></div>AI Sales Engine · Built for India</div>
+    <h1>Your team loses deals<br>not from bad pitches —<br>from <span class="hi">silence</span> after them.</h1>
+    <p class="hero-sub">Revvr automatically follows up, scores leads, drafts proposals, and updates your CRM — so your team only focuses on closing.</p>
+    <div class="hero-btns">
+      <button class="btn-p" onclick="showPage('demo')">Try live demo →</button>
+      <button class="btn-o" onclick="showPage('pricing')">See pricing</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-n" data-target="40" data-suffix="%">0%</span><div class="stat-l">deals lost to<br>no followup</div></div>
+      <div class="stat"><span class="stat-n">3 hrs</span><div class="stat-l">wasted per<br>proposal</div></div>
+      <div class="stat"><span class="stat-n" data-target="33" data-suffix="%">0%</span><div class="stat-l">teams still not<br>using AI</div></div>
+    </div>
+  </div>
+
+  <div class="img-row">
+    <div class="img-r-card t">
+      <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=440&q=80" alt="Team"/>
+      <div class="img-ov">Team collaboration</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="img-r-card w"><img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?w=600&q=80" alt="Meeting"/><div class="img-ov">Pipeline visibility</div></div>
+      <div class="img-r-card w"><img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80" alt="Deals"/><div class="img-ov">Close more deals</div></div>
+    </div>
+    <div class="img-r-card t"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=440&q=80" alt="Pro"/><div class="img-ov">Sales excellence</div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="features-grid">
+    <div class="feat-card" onclick="showPage('demo');setMode('followup')">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Auto followup sequences</div>
+      <div class="feat-desc">Day 1, 3, 7, 14 sent automatically. Zero effort from your reps.</div>
+    </div>
+    <div class="feat-card" onclick="showPage('demo');setMode('proposal')">
+      <div class="feat-icon">📄</div>
+      <div class="feat-title">AI proposal generator</div>
+      <div class="feat-desc">Custom proposal in 2 minutes. Not 3 hours.</div>
+    </div>
+    <div class="feat-card" onclick="showPage('demo');setMode('scoring')">
+      <div class="feat-icon">🎯</div>
+      <div class="feat-title">Smart lead scoring</div>
+      <div class="feat-desc">Hot, warm, cold — real-time scoring for every lead.</div>
+    </div>
+    <div class="feat-card" onclick="showPage('demo')">
+      <div class="feat-icon">🔄</div>
+      <div class="feat-title">Auto CRM updates</div>
+      <div class="feat-desc">Every touchpoint logged automatically. CRM stays clean.</div>
+    </div>
+    <div class="feat-card" onclick="showPage('demo')">
+      <div class="feat-icon">📋</div>
+      <div class="feat-title">Post-meeting actions</div>
+      <div class="feat-desc">Summaries and next steps sent to leads after every call.</div>
+    </div>
+    <div class="feat-card" onclick="showPage('demo')">
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Pipeline intelligence</div>
+      <div class="feat-desc">Real-time health scores and action recommendations.</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:2rem 0 3rem;">
+    <button class="btn-p" onclick="showPage('demo')">Try the live AI demo →</button>
+  </div>
+</div>
+
+<!-- ═══════════ DEMO PAGE ═══════════ -->
+<div class="page" id="page-demo">
+  <div class="demo-wrap">
+    <div class="demo-header">
+      <div>
+        <div class="demo-title">Revvr Live Demo</div>
+        <div class="demo-subtitle">Real AI — try followup, proposal generation, and lead scoring</div>
+      </div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="mt-followup" onclick="setMode('followup')">Followup Agent</button>
+        <button class="mode-tab" id="mt-proposal" onclick="setMode('proposal')">Proposal AI</button>
+        <button class="mode-tab" id="mt-scoring" onclick="setMode('scoring')">Lead Scoring</button>
+      </div>
+    </div>
+
+    <div class="demo-grid">
+      <!-- LEFT: Pipeline + Mode Panels -->
+      <div class="demo-main">
+        <!-- Pipeline -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Your pipeline</div>
+            <div class="panel-sub">Click a lead to work with them</div>
+          </div>
+          <div class="panel-body" style="padding:0.75rem;">
+            <div id="lead-list"></div>
+          </div>
+        </div>
+
+        <!-- Followup Panel -->
+        <div class="panel followup-panel active" id="panel-followup">
+          <div class="panel-header">
+            <div class="panel-title">Followup message</div>
+            <div class="panel-sub" id="fu-lead-name">Select a lead above</div>
+          </div>
+          <div class="panel-body">
+            <div class="followup-list" id="fu-day-list"></div>
+            <div id="fu-output-wrap" style="display:none;">
+              <div class="fu-output" id="fu-output"></div>
+              <div class="fu-actions">
+                <button class="fu-btn" onclick="copyFu()">Copy message</button>
+                <button class="fu-btn primary" onclick="sendFu()">Mark as sent ✓</button>
+              </div>
+            </div>
+            <div class="empty-state" id="fu-empty">Select a lead and a followup day to generate a message</div>
+          </div>
+        </div>
+
+        <!-- Proposal Panel -->
+        <div class="panel proposal-panel" id="panel-proposal">
+          <div class="panel-header">
+            <div class="panel-title">AI Proposal Generator</div>
+            <div class="panel-sub">Fill in details — AI drafts the full proposal</div>
+          </div>
+          <div class="panel-body">
+            <div class="proposal-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="form-label">Client name</div>
+                  <input class="form-input" id="p-client" placeholder="e.g. Rahul Sharma" />
+                </div>
+                <div class="form-group">
+                  <div class="form-label">Company</div>
+                  <input class="form-input" id="p-company" placeholder="e.g. TechCorp India" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <div class="form-label">Team size</div>
+                  <select class="form-select" id="p-size">
+                    <option>5–10 people</option>
+                    <option>10–20 people</option>
+                    <option>20–50 people</option>
+                    <option>50+ people</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <div class="form-label">Main pain point</div>
+                  <select class="form-select" id="p-pain">
+                    <option>No followup system</option>
+                    <option>Manual proposals taking too long</option>
+                    <option>No lead scoring</option>
+                    <option>CRM not being used</option>
+                    <option>Missing post-meeting actions</option>
+                  </select>
+                </div>
+              </div>
+              <button class="gen-btn" id="prop-gen-btn" onclick="generateProposal()">Generate proposal with AI →</button>
+            </div>
+            <div class="form-label" style="margin-bottom:6px;">Generated proposal</div>
+            <div class="proposal-output" id="proposal-output">Your AI-generated proposal will appear here...</div>
+            <div class="proposal-actions" id="prop-actions" style="display:none;">
+              <button class="prop-btn" onclick="copyProposal()">Copy proposal</button>
+              <button class="prop-btn" onclick="downloadProposal()">Download as .txt</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scoring Panel -->
+        <div class="panel score-panel" id="panel-scoring">
+          <div class="panel-header">
+            <div class="panel-title">Lead intelligence</div>
+            <div class="panel-sub" id="score-lead-name">Select a lead to see their score</div>
+          </div>
+          <div class="panel-body">
+            <div class="score-detail" id="score-detail">
+              <div class="empty-state">Select a lead from the pipeline to see their AI score breakdown</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: AI Chat -->
+      <div class="panel chat-panel" style="height:fit-content;min-height:520px;">
+        <div class="chat-agent-header">
+          <div class="agent-avatar">R</div>
+          <div>
+            <div class="agent-name">Revvr AI</div>
+            <div class="agent-status">● Active — AI powered</div>
+          </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg">
+            <div class="msg-avatar ai">R</div>
+            <div class="msg-bubble ai">Hi! I'm Revvr, your AI sales engine. I can write followup messages, score leads, generate proposals, and answer sales questions. What can I help with today?</div>
+          </div>
+        </div>
+        <div class="quick-btns" id="quick-btns">
+          <button class="qbtn" onclick="askQ('Write a followup for Rahul at TechCorp')">Followup for Rahul</button>
+          <button class="qbtn" onclick="askQ('Which lead should I call first today?')">Who to call first?</button>
+          <button class="qbtn" onclick="askQ('What is Revvr and how does it work?')">What is Revvr?</button>
+          <button class="qbtn" onclick="askQ('How much does Revvr cost?')">Pricing?</button>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-inp" id="chat-inp" placeholder="Ask Revvr anything..." onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="chat-send" id="chat-send-btn" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PRICING PAGE ═══════════ -->
+<div class="page" id="page-pricing">
+  <div class="pricing-wrap">
+    <h2>Simple pricing. One-time setup.</h2>
+    <p>No monthly SaaS fees. No per-user pricing. Pay once, runs forever.<br>Running costs ~₹1,600/month in API usage only.</p>
+
+    <div class="roi-banner">
+      <div class="roi-banner-text">
+        <h3>Pays for itself in 17 days</h3>
+        <p>For a 15-person team with ₹80K avg deal value</p>
+      </div>
+      <div class="roi-banner-nums">
+        <div class="roi-num-item"><span class="roi-num-val">₹3.2L</span><div class="roi-num-lbl">monthly recovery</div></div>
+        <div class="roi-num-item"><span class="roi-num-val">600%</span><div class="roi-num-lbl">first month ROI</div></div>
+        <div class="roi-num-item"><span class="roi-num-val">17 days</span><div class="roi-num-lbl">payback period</div></div>
+      </div>
+    </div>
+
+    <div class="pricing-cards">
+      <div class="pc">
+        <div class="pc-tier">Starter</div>
+        <div class="pc-team">1–5 person team</div>
+        <div class="pc-price">₹25,000</div>
+        <div class="pc-note">one-time setup</div>
+        <ul class="pc-feats">
+          <li>Auto followup sequences</li>
+          <li>Smart lead scoring</li>
+          <li>Google Sheets CRM</li>
+          <li>WhatsApp automation</li>
+          <li>2-week setup included</li>
+        </ul>
+        <button class="pc-btn" onclick="showPage('contact')">Get started</button>
+      </div>
+      <div class="pc pop">
+        <div class="pc-badge">Most popular</div>
+        <div class="pc-tier">Growth</div>
+        <div class="pc-team">5–20 person team</div>
+        <div class="pc-price">₹40,000</div>
+        <div class="pc-note">one-time setup</div>
+        <ul class="pc-feats">
+          <li>Everything in Starter</li>
+          <li>AI proposal generator</li>
+          <li>Full CRM integration</li>
+          <li>Auto CRM updates</li>
+          <li>Post-meeting action system</li>
+          <li>Pipeline intelligence dashboard</li>
+        </ul>
+        <button class="pc-btn pop-btn" onclick="showPage('contact')">Get started →</button>
+      </div>
+      <div class="pc">
+        <div class="pc-tier">Enterprise</div>
+        <div class="pc-team">20+ person team</div>
+        <div class="pc-price">₹75,000</div>
+        <div class="pc-note">one-time setup</div>
+        <ul class="pc-feats">
+          <li>Everything in Growth</li>
+          <li>Custom AI workflows</li>
+          <li>Multi-team setup</li>
+          <li>Dedicated support</li>
+          <li>Monthly review calls</li>
+          <li>Priority implementation</li>
+        </ul>
+        <button class="pc-btn" onclick="showPage('contact')">Talk to us</button>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-3);">All plans include a 2-week setup, full documentation, and a 30-minute training session.</p>
+  </div>
+</div>
+
+<!-- ═══════════ CONTACT PAGE ═══════════ -->
+<div class="page" id="page-contact">
+  <div class="contact-wrap">
+    <h2>Book a free demo</h2>
+    <p>30 minutes. We'll show Revvr live inside your pipeline. No commitment, no pressure. Just a demo.</p>
+    <div class="contact-form" id="contact-form">
+      <div class="cf-group">
+        <div class="cf-label">Your name</div>
+        <input class="cf-input" id="cf-name" placeholder="Rahul Sharma" />
+      </div>
+      <div class="cf-group">
+        <div class="cf-label">WhatsApp number</div>
+        <input class="cf-input" id="cf-phone" placeholder="+91 98765 43210" />
+      </div>
+      <div class="cf-group">
+        <div class="cf-label">Company name</div>
+        <input class="cf-input" id="cf-company" placeholder="TechCorp India" />
+      </div>
+      <div class="cf-group">
+        <div class="cf-label">Team size</div>
+        <select class="cf-select" id="cf-size">
+          <option>1–5 people</option>
+          <option>5–20 people</option>
+          <option>20–50 people</option>
+          <option>50+ people</option>
+        </select>
+      </div>
+      <div class="cf-group">
+        <div class="cf-label">Biggest sales challenge</div>
+        <textarea class="cf-textarea" id="cf-message" placeholder="e.g. Our reps aren't following up consistently and we're losing deals..."></textarea>
+      </div>
+      <button class="cf-submit" onclick="submitContact()">Book my free demo →</button>
+    </div>
+    <div class="cf-success" id="cf-success">
+      <div class="cf-success-icon">🎉</div>
+      <h3>You're booked!</h3>
+      <p>We'll WhatsApp you within 2 hours to confirm your demo slot. Looking forward to showing you Revvr!</p>
+    </div>
+    <div class="contact-info">
+      <div class="ci-card">
+        <div class="ci-icon">📱</div>
+        <div class="ci-label">WhatsApp</div>
+        <div class="ci-val">+91 98765 43210</div>
+      </div>
+      <div class="ci-card">
+        <div class="ci-icon">📧</div>
+        <div class="ci-label">Email</div>
+        <div class="ci-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c6aea3aaaaa986b4a3b0b0b4e8afa8">[email&#160;protected]</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── DATA ──
+const LEADS = [
+  {id:1,name:'Rahul Sharma',company:'TechCorp India',amount:'₹2,40,000',score:92,days:3,status:'hot',initials:'RS',color:'#e0f7f5'},
+  {id:2,name:'Priya Mehta',company:'FinStart Solutions',amount:'₹1,80,000',score:85,days:1,status:'hot',initials:'PM',color:'#fef3c7'},
+  {id:3,name:'Amit Gupta',company:'RetailCo Ltd',amount:'₹90,000',score:61,days:7,status:'warm',initials:'AG',color:'#dbeafe'},
+  {id:4,name:'Sneha Joshi',company:'EduTech Pvt Ltd',amount:'₹55,000',score:28,days:14,status:'cold',initials:'SJ',color:'#f3e8ff'},
+  {id:5,name:'Vikram Singh',company:'ManufactCo',amount:'₹1,20,000',score:74,days:3,status:'warm',initials:'VS',color:'#fee2e2'},
+];
+
+const SCORE_FACTORS = {
+  92:{'Email opens (3x)':25,'Replied within 2hrs':20,'Deal > ₹2L':15,'Asked about pricing':20,'Company 50+ employees':12},
+  85:{'Email opens (5x)':28,'Visited proposal link':18,'Deal > ₹1L':12,'Quick reply pattern':17,'Active on LinkedIn':10},
+  74:{'Email opens (2x)':16,'Replied to followup':14,'Deal ₹1L+':12,'Requested demo':20,'Team size match':12},
+  61:{'Opened email (1x)':10,'Delayed reply (2 days)':8,'Mid-range deal':10,'Asked 1 question':18,'Neutral engagement':15},
+  28:{'No email opens':0,'No replies':0,'Small deal size':8,'No website visits':5,'Cold entry':15},
+};
+
+let selectedLead = null;
+let currentMode = 'followup';
+let isGenerating = false;
+
+// ── NAVIGATION ──
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('tab-'+page).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mt-'+mode).classList.add('active');
+  document.querySelectorAll('.followup-panel,.proposal-panel,.score-panel').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  const panel = document.getElementById('panel-'+mode);
+  panel.classList.add('active');
+  panel.style.display = 'block';
+}
+
+// ── PIPELINE ──
+function renderLeads() {
+  const list = document.getElementById('lead-list');
+  list.innerHTML = LEADS.map(l => `
+    <div class="lead-row ${selectedLead?.id === l.id ? 'selected' : ''}" onclick="selectLead(${l.id})">
+      <div class="lead-avatar" style="background:${l.color}">${l.initials}</div>
+      <div class="lead-info">
+        <div class="lead-name">${l.name}</div>
+        <div class="lead-company">${l.company}</div>
+      </div>
+      <div class="lead-meta">
+        <div class="lead-amount">${l.amount}</div>
+        <span class="score-badge score-${l.status}">
+          ${l.status === 'hot' ? '🔥' : l.status === 'warm' ? '🌤️' : '❄️'} ${l.score}
+        </span>
+        <div class="lead-days">Day ${l.days} followup</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectLead(id) {
+  selectedLead = LEADS.find(l => l.id === id);
+  renderLeads();
+  if(currentMode === 'followup') renderFollowupDays();
+  if(currentMode === 'scoring') renderScoring();
+  // Pre-fill proposal form
+  if(selectedLead) {
+    document.getElementById('p-client').value = selectedLead.name;
+    document.getElementById('p-company').value = selectedLead.company;
+  }
+}
+
+// ── FOLLOWUP ──
+const FU_DAYS = [
+  {day:1,label:'Day 1 — First touchpoint',cls:'fu-day-1',hint:'Warm intro, reference the meeting'},
+  {day:3,label:'Day 3 — Check-in',cls:'fu-day-3',hint:'Short, casual, ask a question'},
+  {day:7,label:'Day 7 — Value add',cls:'fu-day-7',hint:'Share relevant resource or case study'},
+  {day:14,label:'Day 14 — Last attempt',cls:'fu-day-14',hint:'Re-engagement, keep the door open'},
+];
+
+let selectedFuDay = null;
+
+function renderFollowupDays() {
+  if(!selectedLead) return;
+  document.getElementById('fu-lead-name').textContent = selectedLead.name + ' · ' + selectedLead.company;
+  document.getElementById('fu-day-list').innerHTML = FU_DAYS.map(d => `
+    <div class="fu-item ${selectedFuDay === d.day ? 'selected' : ''}" onclick="selectFuDay(${d.day})">
+      <div class="fu-item-head">
+        <div class="fu-name">${d.label}</div>
+        <span class="fu-day ${d.cls}">Day ${d.day}</span>
+      </div>
+      <div class="fu-preview">${d.hint}</div>
+    </div>
+  `).join('');
+}
+
+function selectFuDay(day) {
+  if(!selectedLead) { alert('Please select a lead first'); return; }
+  selectedFuDay = day;
+  renderFollowupDays();
+  generateFollowup(day);
+}
+
+async function generateFollowup(day) {
+  const output = document.getElementById('fu-output');
+  const wrap = document.getElementById('fu-output-wrap');
+  const empty = document.getElementById('fu-empty');
+  wrap.style.display = 'block';
+  empty.style.display = 'none';
+  output.textContent = 'Generating...';
+  const lead = selectedLead;
+  const dayInfo = FU_DAYS.find(d => d.day === day);
+  const prompt = `You are Revvr, an AI sales assistant. Write a short, natural sales followup WhatsApp/email message for Day ${day} after a meeting.
+
+Lead: ${lead.name}
+Company: ${lead.company}
+Deal value: ${lead.amount}
+Score: ${lead.score}/100 (${lead.status} lead)
+Day type: ${dayInfo.label} — ${dayInfo.hint}
+
+Write ONLY the message text. Keep it under 100 words. Sound natural, not salesy. Start with "Hi ${lead.name.split(' ')[0]}". End with a soft CTA.`;
+  await streamFromClaude(prompt, output);
+  wrap.style.display = 'block';
+}
+
+function copyFu() {
+  navigator.clipboard.writeText(document.getElementById('fu-output').textContent);
+  showToast('Copied to clipboard!');
+}
+
+function sendFu() {
+  showToast('Marked as sent ✓ CRM updated automatically');
+}
+
+// ── PROPOSAL ──
+async function generateProposal() {
+  const btn = document.getElementById('prop-gen-btn');
+  const output = document.getElementById('proposal-output');
+  const client = document.getElementById('p-client').value || 'the client';
+  const company = document.getElementById('p-company').value || 'their company';
+  const size = document.getElementById('p-size').value;
+  const pain = document.getElementById('p-pain').value;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Generating...';
+  output.textContent = '';
+  const prompt = `You are Revvr, an AI sales tool. Write a concise, professional sales proposal.
+
+Client: ${client}
+Company: ${company}
+Team size: ${size}
+Main pain: ${pain}
+Solution: Revvr AI Sales Engine (₹40,000 one-time setup)
+
+Write a proposal with these sections:
+1. Executive Summary (2-3 sentences)
+2. The Problem We're Solving
+3. How Revvr Works (3 bullet points)
+4. What You Get (deliverables)
+5. Investment & ROI (show payback period)
+6. Next Steps
+
+Keep it under 400 words. Professional but warm tone. Use ₹ for currency.`;
+  await streamFromClaude(prompt, output);
+  btn.disabled = false;
+  btn.textContent = 'Regenerate proposal →';
+  document.getElementById('prop-actions').style.display = 'flex';
+}
+
+function copyProposal() {
+  navigator.clipboard.writeText(document.getElementById('proposal-output').textContent);
+  showToast('Proposal copied!');
+}
+
+function downloadProposal() {
+  const text = document.getElementById('proposal-output').textContent;
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'revvr-proposal.txt';
+  a.click();
+  showToast('Downloaded!');
+}
+
+// ── SCORING ──
+function renderScoring() {
+  if(!selectedLead) return;
+  const lead = selectedLead;
+  document.getElementById('score-lead-name').textContent = lead.name + ' · ' + lead.company;
+  const factors = SCORE_FACTORS[lead.score] || {};
+  const isHot = lead.score >= 75;
+  const isWarm = lead.score >= 50;
+  const color = isHot ? '#16a34a' : isWarm ? '#d97706' : '#6b7280';
+  const circumference = 2 * Math.PI * 30;
+  const offset = circumference - (lead.score / 100) * circumference;
+  const rec = isHot
+    ? `<strong>Call today before 5pm.</strong> This lead is showing strong buying intent. Mention their specific concern and have the proposal ready.`
+    : isWarm
+    ? `<strong>Send a value-add followup.</strong> Share a case study or relevant resource. Schedule a call within 3 days.`
+    : `<strong>Move to re-engagement sequence.</strong> Let Revvr run automated touchpoints for 30 days before personal follow-up.`;
+  document.getElementById('score-detail').innerHTML = `
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 70 70" width="80" height="80">
+          <circle cx="35" cy="35" r="30" fill="none" stroke="${lead.score < 50 ? '#f3f4f6' : '#f3f4f6'}" stroke-width="8"/>
+          <circle cx="35" cy="35" r="30" fill="none" stroke="${color}" stroke-width="8" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease;"/>
+        </svg>
+        <div class="score-ring-label">
+          <span class="score-ring-num">${lead.score}</span>
+          <span class="score-ring-txt">${isHot?'Hot':isWarm?'Warm':'Cold'}</span>
+        </div>
+      </div>
+      <div class="score-breakdown">
+        ${Object.entries(factors).map(([k,v])=>`
+          <div class="score-factor">
+            <span class="score-factor-name">${k}</span>
+            <span class="score-factor-val">+${v} pts</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="score-rec">${rec}</div>
+  `;
+}
+
+// ── AI CHAT ──
+async function sendChat() {
+  const inp = document.getElementById('chat-inp');
+  const msg = inp.value.trim();
+  if(!msg || isGenerating) return;
+  inp.value = '';
+  addMessage(msg, 'user');
+  await getAIResponse(msg);
+}
+
+function askQ(q) {
+  document.getElementById('chat-inp').value = q;
+  sendChat();
+}
+
+function addMessage(text, role) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar ${role}">${role==='ai'?'R':'U'}</div>
+    <div class="msg-bubble ${role}" id="msg-${Date.now()}">${text}</div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div.querySelector('.msg-bubble');
+}
+
+function addTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg';
+  div.id = 'typing-indicator';
+  div.innerHTML = `
+    <div class="msg-avatar ai">R</div>
+    <div class="msg-bubble ai"><div class="typing"><span></span><span></span><span></span></div></div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if(t) t.remove();
+}
+
+async function getAIResponse(userMsg) {
+  isGenerating = true;
+  document.getElementById('chat-send-btn').disabled = true;
+  addTyping();
+  const context = selectedLead ? `The user is currently looking at lead: ${selectedLead.name} from ${selectedLead.company}, deal value ${selectedLead.amount}, score ${selectedLead.score}/100 (${selectedLead.status}).` : '';
+  const prompt = `You are Revvr, a friendly and expert AI sales engine for Indian B2B sales teams. You help with followup messages, lead scoring, proposal generation, and sales strategy. You are enthusiastic and concise.
+
+${context}
+
+Revvr product info:
+- AI-powered sales automation: auto followup (day 1,3,7,14), lead scoring, proposal generation, CRM updates
+- Pricing: Starter ₹25,000, Growth ₹40,000, Enterprise ₹75,000 (all one-time setup fees)
+- Built on Make.com + ChatGPT + WhatsApp + Google Sheets + HubSpot
+- Setup takes 2 weeks, ROI in week 3
+- Contact: hello@revvr.app
+
+User message: ${userMsg}
+
+Respond in 2-4 sentences max. Be helpful, specific, and action-oriented. If asked to write a followup or proposal, write a brief example.`;
+
+  removeTyping();
+  const bubble = addMessage('', 'ai');
+  await streamFromClaude(prompt, bubble);
+  isGenerating = false;
+  document.getElementById('chat-send-btn').disabled = false;
+}
+
+// ── CLAUDE API STREAMING ──
+async function streamFromClaude(prompt, targetEl) {
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        stream: true,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while(true) {
+      const {done, value} = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, {stream:true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for(const line of lines) {
+        if(line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if(data === '[DONE]') return;
+          try {
+            const parsed = JSON.parse(data);
+            if(parsed.type === 'content_block_delta' && parsed.delta?.text) {
+              targetEl.textContent += parsed.delta.text;
+              const msgs = document.getElementById('chat-messages');
+              if(msgs) msgs.scrollTop = msgs.scrollHeight;
+            }
+          } catch(e) {}
+        }
+      }
+    }
+  } catch(err) {
+    targetEl.textContent = 'Note: To enable live AI responses, this demo needs to be served with your Anthropic API key configured. The full product uses real AI. Error: ' + err.message;
+  }
+}
+
+// ── CONTACT ──
+function submitContact() {
+  const name = document.getElementById('cf-name').value;
+  const phone = document.getElementById('cf-phone').value;
+  if(!name || !phone) { alert('Please fill in your name and WhatsApp number'); return; }
+  document.getElementById('contact-form').style.display = 'none';
+  document.getElementById('cf-success').style.display = 'block';
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0a0a0f;color:#fff;padding:10px 20px;border-radius:100px;font-size:13px;font-weight:600;z-index:9999;font-family:Outfit,sans-serif;animation:fadeIn 0.3s ease;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2500);
+}
+
+// ── INIT ──
+renderLeads();
+setMode('followup');
+
+// Counters
+setTimeout(()=>{
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const t=parseInt(el.dataset.target), s=el.dataset.suffix||'';
+    let c=0; const step=Math.ceil(t/40);
+    const tm=set

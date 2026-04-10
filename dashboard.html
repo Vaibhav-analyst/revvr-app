@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revvr — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0a0a0f;--ink-2:#2d2d3a;--ink-3:#6b6b80;
+  --paper:#fafaf7;--paper-2:#f2f2ee;--paper-3:#e4e4de;
+  --accent:#ff4d1c;--accent-l:#fff0ec;--accent-d:#d93a0c;
+  --teal:#0d9488;--teal-l:#e0f7f5;--teal-d:#0a7060;
+  --green:#16a34a;--green-l:#dcfce7;
+  --amber:#d97706;--amber-l:#fef3c7;
+  --red:#dc2626;--red-l:#fee2e2;
+  --blue:#2563eb;--blue-l:#dbeafe;
+  --r:12px;--rs:8px;--rl:20px;
+  --sidebar:240px;
+}
+html{height:100%;}
+body{font-family:'Outfit',sans-serif;background:var(--paper-2);color:var(--ink);line-height:1.5;overflow-x:hidden;min-height:100vh;display:flex;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--ink);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s ease;}
+.sidebar-brand{padding:1.5rem 1.25rem 1rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1e1e2a;}
+.brand-logo{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-1px;}
+.brand-logo em{font-style:normal;color:var(--accent);}
+.brand-badge{background:rgba(255,77,28,.15);color:#ff7a4d;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;letter-spacing:.05em;}
+.sidebar-client{padding:.85rem 1.25rem;border-bottom:1px solid #1e1e2a;display:flex;align-items:center;gap:10px;}
+.client-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.client-name{font-size:13px;font-weight:600;color:#fff;line-height:1.2;}
+.client-plan{font-size:11px;color:#6b6b80;margin-top:1px;}
+.sidebar-nav{flex:1;padding:1rem 0;overflow-y:auto;}
+.nav-section{padding:.5rem 1.25rem .25rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#3a3a4a;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:.65rem 1.25rem;font-size:13px;font-weight:500;color:#9090a8;cursor:pointer;transition:all .2s;position:relative;margin:2px 8px;border-radius:var(--rs);}
+.nav-item:hover{background:#1a1a24;color:#fff;}
+.nav-item.active{background:#1e1e2e;color:#fff;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--accent);border-radius:0 2px 2px 0;}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7;}
+.nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
+.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;animation:badgePulse 2s ease-in-out infinite;}
+@keyframes badgePulse{0%,100%{opacity:1;}50%{opacity:.7;}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
+.sidebar-bottom{padding:1rem 1.25rem;border-top:1px solid #1e1e2a;}
+.sidebar-bottom a{display:flex;align-items:center;gap:8px;font-size:12px;color:#6b6b80;text-decoration:none;padding:.5rem 0;transition:color .2s;}
+.sidebar-bottom a:hover{color:#9090a8;}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── TOP BAR ── */
+.topbar{background:#fff;border-bottom:1px solid var(--paper-3);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:1rem;}
+.page-title{font-family:'Instrument Serif',serif;font-size:22px;font-weight:400;color:var(--ink);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.realtime-pill{display:flex;align-items:center;gap:6px;background:var(--teal-l);color:var(--teal-d);font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;letter-spacing:.04em;}
+.realtime-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:rtPulse 1.5s ease-in-out infinite;}
+@keyframes rtPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.topbar-btn{background:transparent;border:1px solid var(--paper-3);border-radius:var(--rs);padding:7px 14px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.topbar-btn:hover{border-color:var(--ink-3);color:var(--ink);}
+.topbar-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.topbar-btn.primary:hover{background:var(--accent-d);}
+.notif-btn{position:relative;width:36px;height:36px;border-radius:50%;border:1px solid var(--paper-3);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:border-color .2s;}
+.notif-btn:hover{border-color:var(--ink-3);}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid #fff;}
+
+/* ── CONTENT ── */
+.content{padding:1.75rem 2rem;flex:1;}
+
+/* ── TABS ── */
+.view-tabs{display:flex;gap:4px;background:var(--paper-2);padding:4px;border-radius:100px;width:fit-content;margin-bottom:1.5rem;}
+.view-tab{padding:7px 18px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--ink-3);transition:all .2s;font-family:'Outfit',sans-serif;}
+.view-tab:hover{color:var(--ink);}
+.view-tab.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(10,10,15,.08);}
+
+/* ── METRIC CARDS ── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+.metric{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;transition:all .3s;cursor:default;}
+.metric:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,10,15,.06);}
+.metric-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;}
+.metric-value{font-family:'Instrument Serif',serif;font-size:36px;font-weight:400;color:var(--ink);line-height:1;letter-spacing:-1px;margin-bottom:.25rem;}
+.metric-sub{font-size:12px;color:var(--ink-3);}
+.metric-delta{font-size:11px;font-weight:700;padding:2px 7px;border-radius:100px;}
+.delta-up{background:var(--green-l);color:var(--green);}
+.delta-down{background:var(--red-l);color:var(--red);}
+
+/* ── PIPELINE VIEW ── */
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.pipeline-col{display:flex;flex-direction:column;gap:0;}
+.col-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-radius:var(--r) var(--r) 0 0;border:1px solid var(--paper-3);border-bottom:none;background:#fff;}
+.col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;}
+.col-count{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px;}
+.col-hot .col-title{color:var(--accent);}
+.col-hot .col-count{background:var(--accent-l);color:var(--accent-d);}
+.col-warm .col-title{color:var(--amber);}
+.col-warm .col-count{background:var(--amber-l);color:var(--amber);}
+.col-cold .col-title{color:var(--blue);}
+.col-cold .col-count{background:var(--blue-l);color:var(--blue);}
+.col-dead .col-title{color:var(--ink-3);}
+.col-dead .col-count{background:var(--paper-2);color:var(--ink-3);}
+.col-body{background:var(--paper-2);border:1px solid var(--paper-3);border-top:none;border-radius:0 0 var(--r) var(--r);padding:.75rem;display:flex;flex-direction:column;gap:8px;min-height:360px;}
+.lead-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--rs);padding:.85rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+.lead-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px;}
+.col-hot .lead-card::before{background:var(--accent);}
+.col-warm .lead-card::before{background:var(--amber);}
+.col-cold .lead-card::before{background:var(--blue);}
+.col-dead .lead-card::before{background:var(--ink-3);}
+.lead-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(10,10,15,.09);border-color:var(--paper-3);}
+.lead-card.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,77,28,.15);}
+.lc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;}
+.lc-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;}
+.lc-company{font-size:11px;color:var(--ink-3);margin-top:1px;}
+.score-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:100px;flex-shrink:0;}
+.score-hot{background:var(--accent-l);color:var(--accent-d);}
+.score-warm{background:var(--amber-l);color:var(--amber);}
+.score-cold{background:var(--blue-l);color:var(--blue);}
+.score-dead{background:var(--paper-2);color:var(--ink-3);}
+.lc-deal{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px;}
+.lc-meta{display:flex;align-items:center;justify-content:space-between;}
+.lc-days{font-size:11px;color:var(--ink-3);}
+.lc-days.urgent{color:var(--red);font-weight:600;}
+.lc-actions{display:flex;gap:4px;}
+.lc-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--paper-3);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s;}
+.lc-btn:hover{background:var(--paper-2);border-color:var(--ink-3);}
+.add-lead-btn{background:transparent;border:1.5px dashed var(--paper-3);border-radius:var(--rs);padding:.65rem;font-size:12px;color:var(--ink-3);cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;}
+.add-lead-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l);}
+
+/* ── FOLLOWUP CENTER VIEW ── */
+.followup-wrap{display:grid;grid-template-columns:1fr 380px;gap:14px;}
+.followup-list{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;}
+.followup-header{padding:1rem 1.25rem;border-bottom:1px solid var(--paper-3);display:flex;align-items:center;justify-content:space-between;}
+.followup-header-title{font-size:14px;font-weight:700;color:var(--ink);}
+.filter-pills{display:flex;gap:6px;}
+.filter-pill{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:600;border:1px solid var(--paper-3);background:transparent;cursor:pointer;color:var(--ink-3);transition:all .15s;font-family:'Outfit',sans-serif;}
+.filter-pill.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.fu-item{padding:.85rem 1.25rem;border-bottom:1px solid var(--paper-3);display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:background .15s;}
+.fu-item:last-child{border-bottom:none;}
+.fu-item:hover{background:var(--paper-2);}
+.fu-item.selected{background:var(--accent-l);border-left:3px solid var(--accent);}
+.fu-avatar{width:36px;height:36px;border-radius:50%;background:var(--paper-2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--ink-2);flex-shrink:0;}
+.fu-body{flex:1;min-width:0;}
+.fu-name{font-size:13px;font-weight:700;color:var(--ink);}
+.fu-preview{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.fu-meta{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.fu-day{font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;}
+.fu-day-1{background:var(--green-l);color:var(--green);}
+.fu-day-3{background:var(--teal-l);color:var(--teal-d);}
+.fu-day-7{background:var(--amber-l);color:var(--amber);}
+.fu-day-14{background:var(--red-l);color:var(--red);}
+.fu-time{font-size:11px;color:var(--ink-3);}
+.fu-right{text-align:right;flex-shrink:0;}
+.fu-status{font-size:11px;font-weight:600;}
+.fu-status.sent{color:var(--green);}
+.fu-status.pending{color:var(--amber);}
+.fu-status.replied{color:var(--teal);}
+.compose-panel{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden;}
+.compose-header{padding:1rem 1.25rem;border-bottom:1px solid var(--paper-3);}
+.compose-title{font-size:14px;font-weight:700;color:var(--ink);}
+.compose-sub{font-size:12px;color:var(--ink-3);margin-top:2px;}
+.compose-lead-info{padding:.85rem 1.25rem;background:var(--paper-2);border-bottom:1px solid var(--paper-3);display:flex;gap:12px;align-items:center;}
+.cli-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent-d);flex-shrink:0;}
+.cli-name{font-size:14px;font-weight:700;color:var(--ink);}
+.cli-meta{font-size:12px;color:var(--ink-3);margin-top:1px;}
+.compose-score{margin-left:auto;text-align:center;}
+.compose-score-val{font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;color:var(--ink);line-height:1;}
+.compose-score-lbl{font-size:10px;color:var(--ink-3);}
+.compose-body{flex:1;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:10px;}
+.compose-ai-msg{background:var(--paper-2);border-radius:var(--rs);padding:.85rem;font-size:13px;color:var(--ink-2);line-height:1.65;border:1px solid var(--paper-3);}
+.compose-ai-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.compose-textarea{border:1px solid var(--paper-3);border-radius:var(--rs);padding:.75rem;font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink-2);outline:none;resize:none;transition:border-color .2s;background:var(--paper);}
+.compose-textarea:focus{border-color:var(--accent);}
+.compose-footer{padding:.85rem 1.25rem;border-top:1px solid var(--paper-3);display:flex;gap:8px;}
+.compose-send{flex:1;background:var(--accent);color:#fff;border:none;padding:10px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.compose-send:hover{background:var(--accent-d);}
+.compose-regen{background:transparent;border:1px solid var(--paper-3);border-radius:var(--rs);padding:10px 14px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-2);transition:all .2s;}
+.compose-regen:hover{border-color:var(--ink-3);}
+
+/* ── ROI VIEW ── */
+.roi-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.roi-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.5rem;}
+.roi-card-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:1rem;}
+.roi-big{font-family:'Instrument Serif',serif;font-size:52px;font-weight:400;color:var(--ink);letter-spacing:-2px;line-height:1;}
+.roi-big em{font-style:normal;color:var(--accent);}
+.roi-row{display:flex;justify-content:space-between;align-items:center;padding:.65rem 0;border-bottom:1px solid var(--paper-3);font-size:13px;}
+.roi-row:last-child{border-bottom:none;}
+.roi-row-label{color:var(--ink-3);}
+.roi-row-val{font-weight:700;color:var(--ink);}
+.roi-row-val.green{color:var(--green);}
+.roi-row-val.accent{color:var(--accent);}
+.bar-row{margin-bottom:.85rem;}
+.bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-bottom:5px;}
+.bar-label span:last-child{font-weight:700;color:var(--ink);}
+.bar-track{height:8px;background:var(--paper-2);border-radius:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.22,1,.36,1);}
+.bar-accent{background:var(--accent);}
+.bar-teal{background:var(--teal);}
+.bar-green{background:var(--green);}
+.activity-item{display:flex;gap:12px;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid var(--paper-3);}
+.activity-item:last-child{border-bottom:none;}
+.act-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.act-icon.sent{background:var(--green-l);}
+.act-icon.hot{background:var(--accent-l);}
+.act-icon.proposal{background:var(--teal-l);}
+.act-icon.reply{background:var(--amber-l);}
+.act-body{flex:1;}
+.act-text{font-size:12px;color:var(--ink-2);line-height:1.5;}
+.act-text strong{font-weight:700;color:var(--ink);}
+.act-time{font-size:11px;color:var(--ink-3);margin-top:2px;}
+
+/* ── LEAD DETAIL SIDEBAR ── */
+.detail-sidebar{position:fixed;top:0;right:0;bottom:0;width:380px;background:#fff;border-left:1px solid var(--paper-3);z-index:200;transform:translateX(100%);transition:transform .3s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;overflow:hidden;}
+.detail-sidebar.open{transform:translateX(0);}
+.detail-overlay{position:fixed;inset:0;background:rgba(10,10,15,.2);z-index:199;display:none;backdrop-filter:blur(2px);}
+.detail-overlay.show{display:block;}
+.detail-head{padding:1rem 1.25rem;border-bottom:1px solid var(--paper-3);display:flex;align-items:center;justify-content:space-between;}
+.detail-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--paper-3);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-3);transition:all .2s;}
+.detail-close:hover{background:var(--paper-2);color:var(--ink);}
+.detail-body{flex:1;overflow-y:auto;padding:1.25rem;}
+.detail-avatar-row{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;}
+.detail-avatar{width:48px;height:48px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--accent-d);}
+.detail-name{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);font-style:italic;}
+.detail-role{font-size:12px;color:var(--ink-3);margin-top:2px;}
+.detail-score-bar{background:var(--paper-2);border-radius:var(--r);padding:1rem;margin-bottom:1rem;text-align:center;}
+.detail-score-num{font-family:'Instrument Serif',serif;font-size:48px;color:var(--ink);line-height:1;letter-spacing:-2px;}
+.detail-score-lbl{font-size:11px;color:var(--ink-3);margin-top:2px;}
+.detail-score-track{height:6px;background:var(--paper-3);border-radius:3px;margin-top:.75rem;overflow:hidden;}
+.detail-score-fill{height:100%;border-radius:3px;background:var(--accent);transition:width 1s cubic-bezier(.22,1,.36,1);}
+.detail-section{margin-bottom:1.25rem;}
+.detail-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:.65rem;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;font-size:13px;border-bottom:1px solid var(--paper-3);}
+.detail-row:last-child{border-bottom:none;}
+.detail-row-label{color:var(--ink-3);}
+.detail-row-val{font-weight:600;color:var(--ink);}
+.detail-timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:10px;padding-bottom:1rem;position:relative;}
+.tl-item::before{content:'';position:absolute;left:13px;top:26px;bottom:0;width:1px;background:var(--paper-3);}
+.tl-item:last-child::before{display:none;}
+.tl-dot{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;border:2px solid #fff;box-shadow:0 0 0 1px var(--paper-3);}
+.tl-dot.sent{background:var(--green-l);}
+.tl-dot.replied{background:var(--teal-l);}
+.tl-dot.opened{background:var(--amber-l);}
+.tl-dot.added{background:var(--paper-2);}
+.tl-body{flex:1;padding-top:3px;}
+.tl-text{font-size:12px;color:var(--ink-2);line-height:1.5;}
+.tl-time{font-size:11px;color:var(--ink-3);margin-top:2px;}
+.detail-actions{display:flex;flex-direction:column;gap:8px;}
+.detail-action-btn{width:100%;padding:10px;border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.detail-action-btn.primary{background:var(--accent);color:#fff;border:none;}
+.detail-action-btn.primary:hover{background:var(--accent-d);}
+.detail-action-btn.secondary{background:transparent;border:1px solid var(--paper-3);color:var(--ink-2);}
+.detail-action-btn.secondary:hover{border-color:var(--ink-3);color:var(--ink);}
+.detail-action-btn.success{background:transparent;border:1px solid var(--green);color:var(--green);}
+.detail-action-btn.success:hover{background:var(--green-l);}
+
+/* ── HIDDEN VIEWS ── */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ── NOTIFICATION TOAST ── */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--ink);color:#fff;padding:.85rem 1.25rem;border-radius:var(--r);font-size:13px;font-weight:500;z-index:999;transform:translateY(100px);opacity:0;transition:all .35s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;gap:10px;max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-icon{font-size:16px;}
+.toast-close{margin-left:auto;cursor:pointer;opacity:.6;font-size:14px;}
+
+/* ── MOBILE ── */
+.sidebar-toggle{display:none;position:fixed;bottom:1.5rem;left:1.5rem;z-index:150;width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;border:none;cursor:pointer;font-size:18px;box-shadow:0 4px 12px rgba(10,10,15,.2);}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .sidebar-toggle{display:flex;align-items:center;justify-content:center;}
+  .metrics{grid-template-columns:1fr 1fr;}
+  .pipeline{grid-template-columns:1fr 1fr;}
+  .followup-wrap,.roi-wrap{grid-template-columns:1fr;}
+  .detail-sidebar{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✓</span>
+  <span id="toast-msg">Action complete</span>
+  <span class="toast-close" onclick="hideToast()">✕</span>
+</div>
+
+<!-- LEAD DETAIL OVERLAY -->
+<div class="detail-overlay" id="overlay" onclick="closeDetail()"></div>
+
+<!-- LEAD DETAIL SIDEBAR -->
+<div class="detail-sidebar" id="detail-sidebar">
+  <div class="detail-head">
+    <div style="font-size:14px;font-weight:700;color:var(--ink);">Lead details</div>
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <a href="/" target="_blank" style="text-decoration:none;"><div class="sidebar-brand" style="cursor:pointer;">
+    <div class="brand-logo">revvr<em>.</em></div>
+    <div class="brand-badge">LIVE</div>
+  </div></a>
+  <div class="sidebar-client">
+    <div class="client-avatar" id="client-avatar">TC</div>
+    <div>
+      <div class="client-name" id="client-name">TechCorp India</div>
+      <div class="client-plan" id="client-plan">Growth plan · Active</div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="switchView('pipeline',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="4" height="14" rx="1"/><rect x="6" y="4" width="4" height="11" rx="1"/><rect x="11" y="2" width="4" height="13" rx="1"/></svg>
+      Pipeline
+    </div>
+    <div class="nav-item" onclick="switchView('followups',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 11a2 2 0 0 1-2 2H5l-3 2V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/></svg>
+      Followup center
+      <span class="nav-badge">4</span>
+    </div>
+    <div class="nav-item" onclick="switchView('proposals',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5l-3-4z"/><path d="M10 1v4h3M5 9h6M5 11h4"/></svg>
+      Proposals
+    </div>
+    <div class="nav-item" onclick="switchView('roi',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12 5 8l3 3 4-5 2 2"/><circle cx="15" cy="4" r="1.5"/></svg>
+      ROI dashboard
+    </div>
+    <div class="nav-section" style="margin-top:.75rem;">Leads</div>
+    <div class="nav-item" onclick="switchView('hot-leads',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1s4 3 4 7a4 4 0 0 1-8 0c0-1.5.5-3 1.5-4C6 5.5 6 7 7 8c.5-2 1-4 1-7z"/></svg>
+      Hot leads
+    </div>
+    <div class="nav-item" onclick="switchView('cold-reactivation',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1v14M1 8h14M3 3l10 10M13 3 3 13"/></svg>
+      Cold reactivation
+    </div>
+    <div class="nav-section" style="margin-top:.75rem;">Reports</div>
+    <div class="nav-item" onclick="switchView('weekly-reports',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="9" width="3" height="5" rx="1"/><rect x="6" y="6" width="3" height="8" rx="1"/><rect x="11" y="3" width="3" height="11" rx="1"/></svg>
+      Weekly reports
+    </div>
+    <div class="nav-item" onclick="switchView('settings',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5 13 13M3 13l1.5-1.5M11.5 4.5 13 3"/></svg>
+      Settings
+    </div>
+  </div>
+  <div class="sidebar-bottom">
+    <a href="/" target="_blank" style="font-weight:600;color:#d4d0c8;">🏠 Homepage</a>
+    <a onclick="signOut()" style="cursor:pointer;color:#ff6b40;font-weight:600;">Sign out →</a>
+    <a href="/cdn-cgi/l/email-protection#7f171a1313103f0d1a09090d511611"><span class="__cf_email__" data-cfemail="7c14191010133c0e190a0a0e521512">[email&#160;protected]</span></a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- DEMO MODE BANNER -->
+<div id="demo-banner" style="background:#1a1a24;border-bottom:1px solid #2a2a38;padding:.6rem 2rem;display:flex;align-items:center;justify-content:space-between;font-size:12px;">
+  <div style="display:flex;align-items:center;gap:8px;color:#9090a8;">
+    <div style="width:6px;height:6px;border-radius:50%;background:#d97706;"></div>
+    <span>Demo mode — showing sample data. <a href="/#pricing" target="_blank" style="color:#ff6b40;font-weight:700;text-decoration:none;">Get started</a> to connect your real pipeline.</span>
+  </div>
+  <button onclick="document.getElementById('demo-banner').style.display='none'" style="background:none;border:none;color:#6b6b80;cursor:pointer;font-size:14px;">✕</button>
+</div>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title" id="page-title">Pipeline</div>
+    </div>
+    <div class="topbar-right">
+      <div class="realtime-pill"><div class="realtime-dot"></div>Live</div>
+      <button class="topbar-btn" onclick="openCSV()">Import leads</button>
+      <button class="topbar-btn primary" onclick="openAddLead()">+ Add lead</button>
+      <button class="notif-btn" onclick="showToast('🔔','3 new hot lead alerts')">🔔<div class="notif-dot"></div></button>
+      <button onclick="signOut()" style="background:transparent;border:1px solid #e4e4de;border-radius:100px;padding:7px 14px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--ink-3);cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='#e4e4de';this.style.color='var(--ink-3)'">Sign out</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- METRIC CARDS (shown on all views) -->
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Total leads<span class="metric-delta delta-up">+3 today</span></div>
+        <div class="metric-value" data-target="47">0</div>
+        <div class="metric-sub">across all pipeline stages</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Hot leads<span class="metric-delta delta-up">↑ 2 this week</span></div>
+        <div class="metric-value" style="color:var(--accent);" data-target="8">0</div>
+        <div class="metric-sub">score ≥ 75 · need call today</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Revenue pipeline<span class="metric-delta delta-up">+₹2.4L</span></div>
+        <div class="metric-value" style="font-size:28px;">₹24.6L</div>
+        <div class="metric-sub">across 18 active deals</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Reply rate<span class="metric-delta delta-down">↓ 3% vs last wk</span></div>
+        <div class="metric-value" style="color:var(--teal);" data-target="68">0</div>
+        <div class="metric-sub">of followups got a reply</div>
+      </div>
+    </div>
+
+    <!-- PIPELINE VIEW -->
+    <div class="view active" id="view-pipeline">
+      <div class="view-tabs">
+        <button class="view-tab active" onclick="switchTab(this,'pipeline')">Kanban</button>
+        <button class="view-tab" onclick="showToast('📋','List view coming soon')">List</button>
+        <button class="view-tab" onclick="showToast('📅','Timeline view coming soon')">Timeline</button>
+      </div>
+      <div class="pipeline" id="pipeline-board"></div>
+    </div>
+
+    <!-- FOLLOWUP CENTER VIEW -->
+    <div class="view" id="view-followups">
+      <div class="followup-wrap">
+        <div class="followup-list">
+          <div class="followup-header">
+            <div class="followup-header-title">Followup queue</div>
+            <div class="filter-pills">
+              <button class="filter-pill active" onclick="filterFU(this,'all')">All</button>
+              <button class="filter-pill" onclick="filterFU(this,'pending')">Pending</button>
+              <button class="filter-pill" onclick="filterFU(this,'sent')">Sent</button>
+              <button class="filter-pill" onclick="filterFU(this,'replied')">Replied</button>
+            </div>
+          </div>
+          <div id="fu-list"></div>
+        </div>
+        <div class="compose-panel">
+          <div class="compose-header">
+            <div class="compose-title">AI message composer</div>
+            <div class="compose-sub">Revvr writes it · you review · send in one click</div>
+          </div>
+          <div class="compose-lead-info">
+            <div class="cli-avatar" id="compose-avatar">RS</div>
+            <div>
+              <div class="cli-name" id="compose-name">Rahul Sharma</div>
+              <div class="cli-meta" id="compose-meta">TechCorp India · Day 3 followup</div>
+            </div>
+            <div class="compose-score">
+              <div class="compose-score-val" id="compose-score">72</div>
+              <div class="compose-score-lbl">score</div>
+            </div>
+          </div>
+          <div class="compose-body">
+            <div>
+              <div class="compose-ai-label">✦ AI drafted message</div>
+              <div class="compose-ai-msg" id="compose-msg">Hi Rahul, checking in since our conversation last week. I know you were evaluating a few options — has anything changed on your end? We've helped a similar company in your space recover ₹2.8L in pipeline last month. Happy to share the details if useful.</div>
+            </div>
+            <textarea class="compose-textarea" id="compose-edit" rows="4" placeholder="Edit the message before sending..."></textarea>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="filter-pill" onclick="regenMsg()">✦ Regenerate</button>
+              <button class="filter-pill" onclick="setToneCompose('friendly')">Friendly</button>
+              <button class="filter-pill" onclick="setToneCompose('bold')">Bold</button>
+              <button class="filter-pill" onclick="setToneCompose('professional')">Professional</button>
+            </div>
+          </div>
+          <div class="compose-footer">
+            <button class="compose-regen" onclick="regenMsg()">↺ Regen</button>
+            <button class="compose-send" onclick="sendMsg()">Send via Email →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPOSALS VIEW -->
+    <div class="view" id="view-proposals">
+      <div style="text-align:center;padding:4rem 2rem;">
+        <div style="font-family:'Instrument Serif',serif;font-size:32px;color:var(--ink);margin-bottom:.75rem;font-style:italic;">AI Proposal Builder</div>
+        <div style="font-size:15px;color:var(--ink-3);margin-bottom:2rem;">Generate a complete proposal in under 2 minutes</div>
+        <a href="/demo" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:14px 28px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:700;transition:background .2s;" onmouseover="this.style.background='var(--accent-d)'" onmouseout="this.style.background='var(--accent)'">Open proposal generator →</a>
+        <div style="margin-top:2.5rem;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:640px;margin-left:auto;margin-right:auto;" id="proposal-history"></div>
+      </div>
+    </div>
+
+    <!-- ROI VIEW -->
+    <div class="view" id="view-roi">
+      <div class="roi-wrap">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="roi-card">
+            <div class="roi-card-title">Revenue recovered this month</div>
+            <div class="roi-big">₹<em>3.2</em>L</div>
+            <div style="font-size:13px;color:var(--ink-3);margin-top:.5rem;">From cold lead reactivation + recovered pipeline</div>
+            <div style="margin-top:1.25rem;">
+              <div class="bar-row"><div class="bar-label"><span>Cold leads recovered</span><span>₹1.4L</span></div><div class="bar-track"><div class="bar-fill bar-accent" style="width:0%" data-w="44%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Hot lead conversions</span><span>₹1.1L</span></div><div class="bar-track"><div class="bar-fill bar-teal" style="width:0%" data-w="34%"></div></div></div>
+              <div class="bar-row"><div class="bar-label"><span>Proposal-driven closes</span><span>₹0.7L</span></div><div class="bar-track"><div class="bar-fill bar-green" style="width:0%" data-w="22%"></div></div></div>
+            </div>
+          </div>
+          <div class="roi-card">
+            <div class="roi-card-title">ROI on Revvr investment</div>
+            <div class="roi-row"><div class="roi-row-label">Setup investment</div><div class="roi-row-val">₹40,000</div></div>
+            <div class="roi-row"><div class="roi-row-label">Monthly API costs</div><div class="roi-row-val">₹1,600</div></div>
+            <div class="roi-row"><div class="roi-row-label">Revenue recovered (Month 1)</div><div class="roi-row-val green">₹3,20,000</div></div>
+            <div class="roi-row"><div class="roi-row-label">Net profit Month 1</div><div class="roi-row-val green">₹2,78,400</div></div>
+            <div class="roi-row"><div class="roi-row-label">ROI</div><div class="roi-row-val accent">696%</div></div>
+            <div class="roi-row"><div class="roi-row-label">Payback period</div><div class="roi-row-val">17 days</div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="roi-card">
+            <div class="roi-card-title">Automation performance</div>
+            <div class="roi-row"><div class="roi-row-label">Followups sent this month</div><div class="roi-row-val">184</div></div>
+            <div class="roi-row"><div class="roi-row-label">Replies received</div><div class="roi-row-val green">47</div></div>
+            <div class="roi-row"><div class="roi-row-label">Reply rate</div><div class="roi-row-val">25.5%</div></div>
+            <div class="roi-row"><div class="roi-row-label">Proposals generated</div><div class="roi-row-val">23</div></div>
+            <div class="roi-row"><div class="roi-row-label">Proposals opened</div><div class="roi-row-val">19</div></div>
+            <div class="roi-row"><div class="roi-row-label">Cold leads reactivated</div><div class="roi-row-val green">11</div></div>
+            <div class="roi-row"><div class="roi-row-label">Hours saved by team</div><div class="roi-row-val">62 hrs</div></div>
+          </div>
+          <div class="roi-card">
+            <div class="roi-card-title">Recent activity</div>
+            <div class="activity-item"><div class="act-icon sent">✓</div><div class="act-body"><div class="act-text"><strong>Day 7 followup sent</strong> to Priya Mehta · FinStart</div><div class="act-time">2 minutes ago</div></div></div>
+            <div class="activity-item"><div class="act-icon hot">🔥</div><div class="act-body"><div class="act-text"><strong>Hot lead alert</strong> · Amit Gupta scored 82</div><div class="act-time">14 minutes ago</div></div></div>
+            <div class="activity-item"><div class="act-icon reply">↩</div><div class="act-body"><div class="act-text"><strong>Reply received</strong> from Deepak Nair · RetailCo</div><div class="act-time">1 hour ago</div></div></div>
+            <div class="activity-item"><div class="act-icon proposal">📄</div><div class="act-body"><div class="act-text"><strong>Proposal sent</strong> to Sunita Sharma · HealthTech</div><div class="act-time">3 hours ago</div></div></div>
+            <div class="activity-item"><div class="act-icon sent">✓</div><div class="act-body"><div class="act-text"><strong>Cold reactivation</strong> sent to 12 leads</div><div class="act-time">Monday 10am</div></div></div>
+          </div>
+        </div>
+      </div>
+    
+    <!-- HOT LEADS VIEW -->
+    <div class="view" id="view-hot-leads">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:4px;">Priority queue</div>
+          <div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);font-style:italic;">Hot leads — call these today</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:var(--accent-l);border:1px solid rgba(255,77,28,.2);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--accent-d);"><div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:rtPulse 1.5s ease-in-out infinite;"></div>Live scoring</div>
+      </div>
+      <div id="hot-leads-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+      <div style="background:var(--accent-l);border:1px solid rgba(255,77,28,.2);border-radius:var(--r);padding:1.25rem;margin-top:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--accent-d);">Make.com hot lead alert is active</div><div style="font-size:12px;color:var(--ink-3);margin-top:2px;">When any lead crosses score 75, your rep gets a WhatsApp alert instantly — even if dashboard is closed.</div></div>
+        <button onclick="showToast('✓','Make.com hot lead alert is live')" style="background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">View in Make.com ↗</button>
+      </div>
+    </div>
+
+    <!-- COLD REACTIVATION VIEW -->
+    <div class="view" id="view-cold-reactivation">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px;">
+        <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#2563eb;margin-bottom:4px;">Reactivation campaign</div><div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);font-style:italic;">Cold leads — your hidden goldmine</div></div>
+        <button onclick="runReactivation()" id="reactivation-btn" style="background:#2563eb;color:#fff;border:none;padding:9px 20px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">❄️ Run reactivation now</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.25rem;">
+        <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;text-align:center;"><div style="font-family:'Instrument Serif',serif;font-size:36px;color:var(--ink);" id="cold-count">0</div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-top:4px;">Cold leads</div></div>
+        <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;text-align:center;"><div style="font-family:'Instrument Serif',serif;font-size:36px;color:#2563eb;">8–12%</div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-top:4px;">Avg conversion</div></div>
+        <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;text-align:center;"><div style="font-family:'Instrument Serif',serif;font-size:36px;color:var(--teal);" id="potential-value">₹0</div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-top:4px;">Potential recovery</div></div>
+      </div>
+      <div id="cold-leads-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem;"></div>
+      <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:1rem;">Reactivation sequence — 3 messages over 30 days</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:12px;"><div style="width:28px;height:28px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1e40af;flex-shrink:0;">1</div><div><div style="font-size:13px;font-weight:600;color:var(--ink);">Day 1 — Fresh angle</div><div style="font-size:12px;color:var(--ink-3);">Reference original conversation from a new angle. No mention of time gap.</div></div></div>
+          <div style="display:flex;gap:12px;"><div style="width:28px;height:28px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1e40af;flex-shrink:0;">2</div><div><div style="font-size:13px;font-weight:600;color:var(--ink);">Day 15 — Social proof</div><div style="font-size:12px;color:var(--ink-3);">Share a result from a similar company relevant to their situation.</div></div></div>
+          <div style="display:flex;gap:12px;"><div style="width:28px;height:28px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1e40af;flex-shrink:0;">3</div><div><div style="font-size:13px;font-weight:600;color:var(--ink);">Day 30 — Breakup message</div><div style="font-size:12px;color:var(--ink-3);">"Last message — just let me know if timing changes." Converts surprisingly well.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEKLY REPORTS VIEW -->
+    <div class="view" id="view-weekly-reports">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px;">
+        <div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:4px;">Every Monday 8am</div><div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);font-style:italic;">Weekly pipeline reports</div></div>
+        <button onclick="generateReport()" style="background:var(--teal);color:#fff;border:none;padding:9px 20px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Generate report now</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.25rem;" id="report-stats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;">
+          <div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--paper-3);font-size:13px;font-weight:700;color:var(--ink);">This week's report</div>
+          <div id="report-preview" style="padding:1.25rem;font-size:13px;color:var(--ink-2);line-height:1.8;white-space:pre-wrap;font-family:'Instrument Serif',serif;font-style:italic;min-height:200px;"></div>
+          <div style="padding:.85rem 1.25rem;border-top:1px solid var(--paper-3);display:flex;gap:8px;">
+            <button onclick="showToast('📱','Report sent to sales head via WhatsApp')" style="flex:1;padding:9px;border-radius:var(--rs);background:var(--teal);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Send via WhatsApp</button>
+            <button onclick="showToast('📧','Report sent via email')" style="flex:1;padding:9px;border-radius:var(--rs);background:transparent;border:1px solid var(--paper-3);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-2);">Send via Email</button>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;">
+          <div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--paper-3);font-size:13px;font-weight:700;color:var(--ink);">Report history</div>
+          <div id="report-history"></div>
+          <div style="padding:.85rem 1.25rem;border-top:1px solid var(--paper-3);"><div style="font-size:12px;color:var(--ink-3);">Make.com sends this automatically every Monday at 8am. No action needed.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div class="view" id="view-settings">
+      <div style="margin-bottom:1.5rem;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:4px;">Account</div><div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);font-style:italic;">Settings</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;">
+          <div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--paper-3);font-size:13px;font-weight:700;color:var(--ink);">Company details</div>
+          <div style="padding:1.25rem;display:flex;flex-direction:column;gap:12px;">
+            <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Company name</div><input id="s-company" type="text" value="TechCorp India" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+            <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Contact name</div><input id="s-name" type="text" value="Rahul Sharma" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+            <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Work email</div><input id="s-email" type="email" value="rahul@techcorp.in" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+            <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">WhatsApp (reports sent here)</div><input id="s-whatsapp" type="tel" value="+91 98765 43210" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+            <button onclick="saveSettings()" style="padding:10px;border-radius:100px;background:var(--accent);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;" onmouseover="this.style.background='var(--accent-d)'" onmouseout="this.style.background='var(--accent)'">Save changes</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;">
+            <div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--paper-3);font-size:13px;font-weight:700;color:var(--ink);">Automation status</div>
+            <div style="padding:1.25rem;display:flex;flex-direction:column;gap:12px;" id="automation-toggles"></div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;">
+            <div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--paper-3);font-size:13px;font-weight:700;color:var(--ink);">Plan &amp; billing</div>
+            <div style="padding:1.25rem;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;"><div style="font-size:14px;font-weight:700;color:var(--ink);">Growth plan</div><div style="background:var(--teal-l);color:var(--teal-d);font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;">Active</div></div>
+              <div style="font-size:12px;color:var(--ink-3);line-height:1.6;margin-bottom:1rem;">One-time setup: ₹40,000 · Running costs: ~₹1,600/month</div>
+              <div style="display:flex;gap:8px;"><button onclick="showToast('📄','Invoice downloaded')" style="flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--paper-3);background:transparent;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-2);">Download invoice</button><button onclick="showToast('🔄','Contact hello@revvr.app to upgrade')" style="flex:1;padding:8px;border-radius:var(--rs);background:var(--ink);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Upgrade plan</button></div>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;">
+            <div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--paper-3);font-size:13px;font-weight:700;color:var(--ink);">Quick links</div>
+            <div style="padding:1.25rem;display:flex;flex-direction:column;gap:10px;">
+              <a href="/" target="_blank" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">🏠 Revvr homepage</a>
+              <a href="/demo" target="_blank" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">🎯 Live demo</a>
+              <a href="/blog" target="_blank" style="font-size:13px;color:var(--teal);text-decoration:none;font-weight:600;">📝 Blog</a>
+              <a href="/cdn-cgi/l/email-protection#157d7079797a5567706363673b7c7b" style="font-size:13px;color:var(--accent);text-decoration:none;font-weight:600;">📧 Contact support</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</div>
+
+  </div>
+</div>
+
+<!-- MOBILE SIDEBAR TOGGLE -->
+<button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
+/* ── SUPABASE CONFIG ── */
+const SUPABASE_URL = 'https://mitmfnjqpndfrjwruhxw.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_7GwXw-edEyNU0EIzWS_WoA_pEffwYhO'
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+/* ── AUTH GUARD ── */
+/* Checks if user is logged in. If not, redirects to login page. */
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession()
+
+  if (!session) {
+    // Not logged in — redirect to login
+    window.location.href = '/login?redirect=dashboard'
+    return
+  }
+
+  // Logged in — load their data
+  const user = session.user
+  loadClientData(user)
+}
+
+async function loadClientData(user) {
+  try {
+    // Fetch client record from Supabase
+    const { data: client, error } = await sb
+      .from('clients')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    if (client) {
+      // Update sidebar with real client data
+      const nameEl = document.getElementById('client-name')
+      const avatarEl = document.getElementById('client-avatar')
+      if (nameEl) nameEl.textContent = client.company_name || user.email
+      if (avatarEl) {
+        const initials = (client.company_name || user.email)
+          .split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()
+        avatarEl.textContent = initials
+      }
+
+      // Update plan badge
+      const planEl = document.querySelector('.client-plan')
+      if (planEl && client.plan) {
+        planEl.textContent = client.plan.charAt(0).toUpperCase() + client.plan.slice(1) + ' plan · Active'
+      }
+
+      // Load real leads from Supabase
+      loadLeads(client.id)
+    }
+  } catch(err) {
+    console.log('Using demo data — Supabase not connected yet')
+    // Falls through to use static LEADS array (demo mode)
+  }
+}
+
+async function loadLeads(clientId) {
+  try {
+    const { data: leads } = await sb
+      .from('leads')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('score', { ascending: false })
+
+    if (leads && leads.length > 0) {
+      // Map Supabase leads to dashboard format
+      window.LEADS = leads.map(l => ({
+        id: l.id,
+        name: l.name,
+        company: l.company || '—',
+        phone: l.phone || '',
+        email: l.email || '',
+        deal: '₹' + (parseInt(l.deal_value) || 0).toLocaleString('en-IN'),
+        score: l.score || 0,
+        status: l.status || 'cold',
+        days: l.last_contact_date
+          ? Math.floor((Date.now() - new Date(l.last_contact_date)) / 86400000)
+          : 0,
+        source: l.source || 'manual',
+        notes: l.notes || 'No notes added yet.',
+        timeline: [{type:'added', text:'Lead added', time:new Date(l.created_at).toLocaleDateString('en-IN')}]
+      }))
+      buildPipeline()
+    }
+  } catch(err) {
+    console.log('Using demo leads — Supabase not connected yet')
+  }
+}
+
+/* ── SIGN OUT ── */
+async function signOut() {
+  await sb.auth.signOut()
+  window.location.href = '/'
+}
+
+/* ── REALTIME LEAD UPDATES ── */
+function startRealtime(clientId) {
+  sb.channel('leads-live')
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'leads',
+      filter: 'client_id=eq.' + clientId
+    }, payload => {
+      console.log('Lead updated in real time:', payload)
+      loadLeads(clientId)
+      showToast('🔄', 'Pipeline updated in real time')
+    })
+    .subscribe()
+}
+
+/* ── RUN AUTH CHECK ON LOAD ── */
+checkAuth()
+
+const LEADS=[
+  {id:1,name:'Rahul Sharma',company:'TechCorp India',deal:'₹80,000',score:88,status:'hot',days:2,source:'Website form',phone:'+91 98765 43210',email:'rahul@techcorp.in',notes:'Very interested, asked about WhatsApp integration specifically. Budget confirmed.',timeline:[{type:'replied',text:'Replied to Day 3 message: "Can we schedule a call?"',time:'2 hours ago'},{type:'sent',text:'Day 3 followup sent via WhatsApp',time:'Yesterday'},{type:'sent',text:'Day 1 speed-to-lead message sent',time:'3 days ago'},{type:'added',text:'Lead added from website form',time:'3 days ago'}]},
+  {id:2,name:'Priya Mehta',company:'FinStart Solutions',deal:'₹1,20,000',score:79,status:'hot',days:1,source:'Manual entry',phone:'+91 87654 32109',email:'priya@finstart.in',notes:'Founder. Very responsive. Mentioned competitor was also pitching.',timeline:[{type:'sent',text:'Day 7 followup sent — case study shared',time:'2 mins ago'},{type:'replied',text:'Opened proposal 3 times in last 24 hours',time:'Yesterday'},{type:'sent',text:'Proposal sent via email',time:'2 days ago'},{type:'added',text:'Lead added manually by rep',time:'1 week ago'}]},
+  {id:3,name:'Sanjay Kumar',company:'BuildFast Infra',deal:'₹60,000',score:65,status:'warm',days:4,source:'Referral',phone:'+91 76543 21098',email:'sanjay@buildfast.co',notes:'Was interested but went quiet. Follow up with ROI case study.',timeline:[{type:'sent',text:'Day 7 followup sent — reactivation angle',time:'4 days ago'},{type:'sent',text:'Day 3 followup sent',time:'1 week ago'},{type:'sent',text:'Day 1 message sent',time:'10 days ago'},{type:'added',text:'Lead from referral — Rahul S.',time:'10 days ago'}]},
+  {id:4,name:'Anita Desai',company:'HR Circle',deal:'₹45,000',score:58,status:'warm',days:3,source:'Facebook ad',phone:'+91 65432 10987',email:'anita@hrcircle.com',notes:'HR niche. Interested in the recruitment automation angle specifically.',timeline:[{type:'sent',text:'Day 3 followup sent',time:'3 days ago'},{type:'sent',text:'Day 1 message sent',time:'6 days ago'},{type:'added',text:'Lead from Facebook ad campaign',time:'6 days ago'}]},
+  {id:5,name:'Deepak Nair',company:'RetailCo Pvt Ltd',deal:'₹1,50,000',score:41,status:'cold',days:12,source:'CSV import',phone:'+91 54321 09876',email:'deepak@retailco.in',notes:'Cold since initial call. Budget issues mentioned. Good to retry in Q2.',timeline:[{type:'replied',text:'Replied: "Not the right time, check back in Q2"',time:'12 days ago'},{type:'sent',text:'Day 14 followup sent',time:'2 weeks ago'},{type:'sent',text:'Day 7 followup sent',time:'3 weeks ago'},{type:'added',text:'Imported from old CRM CSV',time:'1 month ago'}]},
+  {id:6,name:'Kavya Reddy',company:'EduTech Ventures',deal:'₹55,000',score:28,status:'cold',days:18,source:'WhatsApp',phone:'+91 43210 98765',email:'kavya@edutech.io',notes:'Went cold after demo. Seemed interested during call. Try reactivation.',timeline:[{type:'sent',text:'Cold reactivation message sent',time:'18 days ago'},{type:'sent',text:'Day 14 followup — no response',time:'3 weeks ago'},{type:'sent',text:'Day 7 followup sent',time:'4 weeks ago'},{type:'added',text:'Inbound WhatsApp lead',time:'5 weeks ago'}]},
+  {id:7,name:'Mohan Das',company:'LogiTrans Corp',deal:'₹90,000',score:12,status:'dead',days:45,source:'CSV import',phone:'+91 32109 87654',email:'mohan@logitrans.com',notes:'No response to 4 messages. Mark as dead, schedule resurrection in 3 months.',timeline:[{type:'sent',text:'Cold reactivation attempt — no response',time:'45 days ago'},{type:'sent',text:'Day 14 — no response',time:'7 weeks ago'},{type:'added',text:'Imported from old database',time:'2 months ago'}]},
+];
+
+const FU_ITEMS=[
+  {id:1,name:'Rahul Sharma',company:'TechCorp India',preview:'Hi Rahul, just following up on our conversation...',day:3,time:'Due now',status:'pending',score:88,avatar:'RS',msg:"Hi Rahul, just following up since our call. You mentioned the followup problem was costing you deals every month — I've put together a quick breakdown of exactly how Revvr fixes this for a team your size. Worth 15 minutes this week?"},
+  {id:2,name:'Priya Mehta',company:'FinStart Solutions',preview:'Day 7 touchpoint sent — case study included',day:7,time:'2 mins ago',status:'sent',score:79,avatar:'PM',msg:"Hi Priya, shared the FinStart case study as promised. They saw a 28% close rate improvement in month one. Happy to walk you through the specifics on a quick call."},
+  {id:3,name:'Sanjay Kumar',company:'BuildFast Infra',preview:'Following up with ROI numbers for your team...',day:7,time:'Due in 1h',status:'pending',score:65,avatar:'SK',msg:"Hi Sanjay, wanted to share some numbers. A construction company similar to BuildFast recovered ₹1.8L in month one using Revvr. The key was the cold reactivation — they had 200+ leads sitting dead. Does this resonate with your situation?"},
+  {id:4,name:'Anita Desai',company:'HR Circle',preview:'Replied: "Sounds interesting, send more info"',day:3,time:'1 hour ago',status:'replied',score:58,avatar:'AD',msg:"Hi Anita, great to hear from you! I'll send over the HR automation details. For recruitment teams specifically, Revvr handles the followup with candidates AND with client companies simultaneously."},
+  {id:5,name:'Deepak Nair',company:'RetailCo',preview:'Cold reactivation — checking in for Q2',day:14,time:'12 days ago',status:'sent',score:41,avatar:'DN',msg:"Hi Deepak, you mentioned Q2 would be better timing. We're now in Q2 — wanted to check if the budget situation has changed. We've onboarded 3 retail companies since we last spoke, happy to share results."},
+];
+
+const PROPOSALS=[
+  {name:'Rahul Sharma',company:'TechCorp',tone:'Professional',date:'Today',opened:3},
+  {name:'Priya Mehta',company:'FinStart',tone:'Bold',date:'Yesterday',opened:5},
+  {name:'Sanjay Kumar',company:'BuildFast',tone:'Friendly',date:'3 days ago',opened:1},
+];
+
+// ── BUILD PIPELINE BOARD ──
+function buildPipeline(){
+  const cols=[
+    {status:'hot',label:'Hot leads',cls:'col-hot',scoreCls:'score-hot'},
+    {status:'warm',label:'Warm leads',cls:'col-warm',scoreCls:'score-warm'},
+    {status:'cold',label:'Cold leads',cls:'col-cold',scoreCls:'score-cold'},
+    {status:'dead',label:'Dead leads',cls:'col-dead',scoreCls:'score-dead'},
+  ];
+  const board=document.getElementById('pipeline-board');
+  board.innerHTML='';
+  cols.forEach(col=>{
+    const leads=LEADS.filter(l=>l.status===col.status);
+    const div=document.createElement('div');
+    div.className='pipeline-col '+col.cls;
+    div.innerHTML=`
+      <div class="col-header">
+        <div class="col-title">${col.label}</div>
+        <div class="col-count">${leads.length}</div>
+      </div>
+      <div class="col-body">
+        ${leads.map(l=>`
+          <div class="lead-card" onclick="openDetail(${l.id})" id="lc-${l.id}">
+            <div class="lc-top">
+              <div><div class="lc-name">${l.name}</div><div class="lc-company">${l.company}</div></div>
+              <div class="score-badge ${col.scoreCls}">${l.score}</div>
+            </div>
+            <div class="lc-deal">${l.deal}</div>
+            <div class="lc-meta">
+              <div class="lc-days ${l.days>=7?'urgent':''}">${l.days === 1 ? 'Contact today' : l.days + 'd since contact'}</div>
+              <div class="lc-actions">
+                <button class="lc-btn" onclick="event.stopPropagation();showToast('📞','Calling '+${JSON.stringify(l.name)})" title="Call">📞</button>
+                <button class="lc-btn" onclick="event.stopPropagation();showToast('✉️','WhatsApp sent to '+${JSON.stringify(l.name)})" title="WhatsApp">💬</button>
+                <button class="lc-btn" onclick="event.stopPropagation();showToast('📄','Opening proposal builder')" title="Proposal">📄</button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+        <button class="add-lead-btn" onclick="openAddLead()">+ Add lead</button>
+      </div>
+    `;
+    board.appendChild(div);
+  });
+}
+
+// ── BUILD FOLLOWUP LIST ──
+function buildFU(filter='all'){
+  const list=document.getElementById('fu-list');
+  const items=filter==='all'?FU_ITEMS:FU_ITEMS.filter(f=>f.status===filter);
+  list.innerHTML=items.map((f,i)=>`
+    <div class="fu-item ${i===0?'selected':''}" onclick="selectFU(${f.id})">
+      <div class="fu-avatar">${f.avatar}</div>
+      <div class="fu-body">
+        <div class="fu-name">${f.name}</div>
+        <div class="fu-preview">${f.preview}</div>
+        <div class="fu-meta">
+          <span class="fu-day fu-day-${f.day}">Day ${f.day}</span>
+          <span class="fu-time">${f.time}</span>
+        </div>
+      </div>
+      <div class="fu-right">
+        <div class="fu-status ${f.status}">${f.status}</div>
+      </div>
+    </div>
+  `).join('');
+  if(items.length>0)selectFUData(items[0]);
+}
+
+function selectFU(id){
+  document.querySelectorAll('.fu-item').forEach(el=>el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const f=FU_ITEMS.find(x=>x.id===id);
+  if(f)selectFUData(f);
+}
+
+function selectFUData(f){
+  document.getElementById('compose-avatar').textContent=f.avatar;
+  document.getElementById('compose-name').textContent=f.name;
+  document.getElementById('compose-meta').textContent=f.company+' · Day '+f.day+' followup';
+  document.getElementById('compose-score').textContent=f.score;
+  document.getElementById('compose-msg').textContent=f.msg;
+  document.getElementById('compose-edit').value='';
+}
+
+function filterFU(btn,filter){
+  document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildFU(filter);
+}
+
+// ── BUILD PROPOSALS ──
+function buildProposals(){
+  const ph=document.getElementById('proposal-history');
+  ph.innerHTML=PROPOSALS.map(p=>`
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1rem;text-align:left;cursor:pointer;transition:all .25s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 16px rgba(10,10,15,.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'" onclick="showToast('📄','Opening proposal for '+${JSON.stringify(p.name)})">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:5px;">${p.tone}</div>
+      <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">${p.name}</div>
+      <div style="font-size:12px;color:var(--ink-3);margin-bottom:.75rem;">${p.company} · ${p.date}</div>
+      <div style="font-size:11px;font-weight:600;color:var(--teal);">Opened ${p.opened} time${p.opened!==1?'s':''}</div>
+    </div>
+  `).join('');
+}
+
+// ── DETAIL SIDEBAR ──
+function openDetail(id){
+  const l=LEADS.find(x=>x.id===id);
+  if(!l)return;
+  document.querySelectorAll('.lead-card').forEach(c=>c.classList.remove('selected'));
+  const card=document.getElementById('lc-'+id);
+  if(card)card.classList.add('selected');
+  const scoreColors={hot:'var(--accent)',warm:'var(--amber)',cold:'var(--blue)',dead:'var(--ink-3)'};
+  document.getElementById('detail-body').innerHTML=`
+    <div class="detail-avatar-row">
+      <div class="detail-avatar">${l.name.split(' ').map(w=>w[0]).join('')}</div>
+      <div>
+        <div class="detail-name">${l.name}</div>
+        <div class="detail-role">${l.company}</div>
+      </div>
+    </div>
+    <div class="detail-score-bar">
+      <div class="detail-score-num">${l.score}</div>
+      <div class="detail-score-lbl">Lead score · ${l.status} lead</div>
+      <div class="detail-score-track"><div class="detail-score-fill" style="width:0%;background:${scoreColors[l.status]}" data-w="${l.score}%"></div></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Contact info</div>
+      <div class="detail-row"><div class="detail-row-label">Phone</div><div class="detail-row-val">${l.phone}</div></div>
+      <div class="detail-row"><div class="detail-row-label">Email</div><div class="detail-row-val" style="font-size:12px;">${l.email}</div></div>
+      <div class="detail-row"><div class="detail-row-label">Deal value</div><div class="detail-row-val">${l.deal}</div></div>
+      <div class="detail-row"><div class="detail-row-label">Source</div><div class="detail-row-val">${l.source}</div></div>
+      <div class="detail-row"><div class="detail-row-label">Last contact</div><div class="detail-row-val ${l.days>=7?'style="color:var(--red)"':''}">${l.days} day${l.days!==1?'s':''} ago</div></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Rep notes</div>
+      <div style="font-size:13px;color:var(--ink-2);line-height:1.65;background:var(--paper-2);border-radius:var(--rs);padding:.75rem;">${l.notes}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Activity timeline</div>
+      <div class="detail-timeline">
+        ${l.timeline.map(t=>`
+          <div class="tl-item">
+            <div class="tl-dot ${t.type}">${t.type==='sent'?'✓':t.type==='replied'?'↩':t.type==='opened'?'👁':'+'}</div>
+            <div class="tl-body"><div class="tl-text">${t.text}</div><div class="tl-time">${t.time}</div></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Update score</div>
+      </div>
+      <div class="detail-section" style="margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="range" min="0" max="100" value="${l.score}" style="flex:1;" oninput="document.getElementById('score-preview-${l.id}').textContent=this.value" onchange="updateScore(${l.id},this.value)" id="score-slider-${l.id}"/>
+          <div id="score-preview-${l.id}" style="font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);min-width:36px;text-align:center;">${l.score}</div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Quick actions</div>
+      <div class="detail-actions">
+        <button class="detail-action-btn primary" onclick="sendEmailToLead('${l.email}','${l.name}','${l.company}')">📧 Send email now</button>
+        <button class="detail-action-btn secondary" onclick="openProposalFor('${l.name}','${l.company}')">📄 Generate proposal</button>
+        <button class="detail-action-btn secondary" onclick="showToast('📞','Opening call log for ${l.name}')">📞 Log a call</button>
+        <button class="detail-action-btn success" onclick="markStatus(${l.id},'won')">✓ Mark as won</button>
+        <button class="detail-action-btn secondary" onclick="markStatus(${l.id},'lost')" style="border-color:var(--red);color:var(--red);" onmouseover="this.style.background='var(--red-l)'" onmouseout="this.style.background='transparent'">✕ Mark as lost</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('detail-sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(()=>{
+    document.querySelectorAll('.detail-score-fill,.bar-fill').forEach(el=>{
+      el.style.width=el.dataset.w||el.style.width;
+    });
+  },100);
+}
+
+function closeDetail(){
+  document.getElementById('detail-sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.querySelectorAll('.lead-card').forEach(c=>c.classList.remove('selected'));
+}
+
+// ── VIEW SWITCHING ──
+function switchView(name,navEl){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl)navEl.classList.add('active');
+  const titles={pipeline:'Pipeline',followups:'Followup center',proposals:'Proposals',roi:'ROI dashboard','hot-leads':'Hot leads','cold-reactivation':'Cold reactivation','weekly-reports':'Weekly reports',settings:'Settings'};
+  document.getElementById('page-title').textContent=titles[name]||name;
+  closeDetail();
+}
+
+function switchTab(btn,name){
+  document.querySelectorAll('.view-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── COMPOSE ──
+const TONES={
+  friendly:"Hi {name}! Hope you're doing well. Just wanted to check in — has anything changed since we last spoke? We've got a few new results from teams similar to yours that I think you'd find interesting 😊",
+  bold:"Hi {name}. Direct question: is fixing your sales followup problem still on your priority list? Because teams that act on this in Q2 are seeing ROI by end of month. Worth 15 mins?",
+  professional:"Dear {name}, I wanted to follow up on our previous conversation regarding Revvr's AI sales automation. I'd welcome the opportunity to discuss how we might address the specific challenges you outlined."
+};
+function setToneCompose(tone){
+  const name=document.getElementById('compose-name').textContent.split(' ')[0];
+  document.getElementById('compose-msg').textContent=TONES[tone].replace('{name}',name);
+}
+function regenMsg(){
+  const msgs=["Hi {name}, just a quick check-in. We had a great conversation last time — curious if the timing is better now? Happy to do a 15-minute call this week.","Hey {name}! Quick one — a company in your exact space just recovered ₹1.8L using Revvr in their first month. Thought you'd want to see the breakdown.","Hi {name}, last thing I'll say for now: if you ever want to revisit the Revvr conversation, just reply to this and I'll set up a demo within 24 hours. No pressure either way."];
+  const name=document.getElementById('compose-name').textContent.split(' ')[0];
+  const msg=msgs[Math.floor(Math.random()*msgs.length)].replace('{name}',name);
+  document.getElementById('compose-msg').textContent=msg;
+  showToast('✦','AI regenerated the message');
+}
+function sendMsg(){
+  const name=document.getElementById('compose-name').textContent;
+  showToast('✓','WhatsApp sent to '+name+' successfully');
+  document.getElementById('compose-edit').value='';
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(icon,msg){
+  clearTimeout(toastTimer);
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast').classList.add('show');
+  toastTimer=setTimeout(hideToast,3500);
+}
+function hideToast(){document.getElementById('toast').classList.remove('show');}
+
+// ── COUNTERS ──
+function runCounters(){
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const t=parseInt(el.dataset.target),s=el.dataset.suffix||'';
+    let c=0;const step=Math.ceil(t/30);
+    const tm=setInterval(()=>{c=Math.min(c+step,t);el.textContent=c+s;if(c>=t)clearInterval(tm);},40);
+  });
+}
+
+// ── SIDEBAR TOGGLE (mobile) ──
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ── BAR ANIMATIONS ──
+function animateBars(){
+  setTimeout(()=>{
+    document.querySelectorAll('.bar-fill[data-w]').forEach(el=>{el.style.width=el.dataset.w;});
+  },300);
+}
+
+// ── INIT ──
+buildPipeline();
+buildFU();
+buildProposals();
+runCounters();
+
+// ── INIT ──
+buildPipeline();
+buildFU();
+buildProposals();
+runCounters();
+
+// Animate bars when ROI view becomes active
+const roiObs = new MutationObserver(() => {
+  if(document.getElementById('view-roi').classList.contains('active')) animateBars();
+});
+roiObs.observe(document.getElementById('view-roi'), {attributes:true, attributeFilter:['class']});
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeDetail();
+});
+
+// ── LIVE COUNTER TICK ──
+// Simulates real-time updates arriving from Claude AI automations
+setInterval(() => {
+  const hot = document.querySelector('.metric-value[style*="accent"]');
+  // Just a subtle pulse to show "live" feel
+}, 8000);
+
+// ── SIDEBAR CLOSE ON OVERLAY CLICK (mobile) ──
+document.addEventListener('click', e => {
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('sidebar-toggle');
+  if(window.innerWidth <= 900 &&
+     !sidebar.contains(e.target) &&
+     !toggle.contains(e.target) &&
+     sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+  }
+});
+
+// ── CSV PARSE (missing from previous build) ──
+function parseCSV(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    const headers=lines[0].toLowerCase().split(',').map(h=>h.trim());
+    const nameIdx=headers.indexOf('name');
+    const phoneIdx=headers.indexOf('phone');
+    const companyIdx=headers.indexOf('company');
+    const emailIdx=headers.indexOf('email');
+    const dealIdx=headers.indexOf('deal_value');
+    if(nameIdx===-1||phoneIdx===-1){
+      const e2=document.getElementById('csv-error');
+      e2.textContent='CSV must have "name" and "phone" columns.';
+      e2.style.display='block';
+      return;
+    }
+    csvLeads=[];
+    for(let i=1;i<Math.min(lines.length,501);i++){
+      const cols=lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+      if(!cols[nameIdx]||!cols[phoneIdx]) continue;
+      csvLeads.push({
+        name:cols[nameIdx],phone:cols[phoneIdx],
+        company:companyIdx>-1?cols[companyIdx]:'',
+        email:emailIdx>-1?cols[emailIdx]:'',
+        deal:dealIdx>-1?cols[dealIdx]:''
+      });
+    }
+    const preview=document.getElementById('csv-preview');
+    preview.style.display='block';
+    preview.innerHTML=`<div style="background:var(--green-l);border-radius:var(--r);padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;font-weight:600;color:var(--green);">${csvLeads.length} leads found in CSV</div><div style="font-size:11px;color:var(--green);">First: ${csvLeads[0]?.name||'—'}</div></div>`;
+    document.getElementById('csv-error').style.display='none';
+  };
+  reader.readAsText(file);
+}
+
+// ── PARALLAX ──
+window.addEventListener('scroll',()=>{
+  const m=document.querySelector('.mosaic');if(!m)return;
+  const r=m.getBoundingClientRect();if(r.bottom<0||r.top>window.innerHeight)return;
+  const p=(r.top/window.innerHeight)*14;
+  m.querySelectorAll('.mosaic-card img').forEach((img,i)=>{img.style.transform=`translateY(${p*(i%2===0?1:-1)}px)`;});
+},{passive:true});
+
+// ── HOT LEADS VIEW ──
+function buildHotLeads(){
+  const hot=LEADS.filter(l=>l.score>=75);
+  const container=document.getElementById('hot-leads-list');
+  if(!container) return;
+  if(!hot.length){
+    container.innerHTML='<div style="text-align:center;padding:3rem;color:var(--ink-3);font-family:Instrument Serif,serif;font-size:18px;font-style:italic;">No hot leads right now — keep following up!</div>';
+    return;
+  }
+  container.innerHTML=hot.map(l=>`
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;cursor:pointer;transition:all .25s;" onclick="openDetail(${l.id})" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(10,10,15,.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:18px;font-weight:400;color:var(--accent-d);flex-shrink:0;">${l.name.split(' ').map(w=>w[0]).join('')}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--ink);">${l.name}</div>
+        <div style="font-size:12px;color:var(--ink-3);">${l.company} · ${l.deal}</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;">
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;color:var(--accent);line-height:1;">${l.score}</div>
+        <div style="font-size:10px;color:var(--ink-3);">score</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button onclick="event.stopPropagation();sendEmailToLead('${l.email}','${l.name}','${l.company}')" style="padding:8px 16px;border-radius:100px;background:var(--accent);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">📧 Email</button>
+        <button onclick="event.stopPropagation();openProposalFor('${l.name}','${l.company}')" style="padding:8px 16px;border-radius:100px;background:transparent;border:1px solid var(--paper-3);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-2);">📄 Proposal</button>
+      </div>
+      <div style="font-size:11px;color:${l.days>=3?'var(--red)':'var(--ink-3)'};flex-shrink:0;font-weight:${l.days>=3?'700':'400'}">${l.days===0?'Contact now':l.days+'d ago'}</div>
+    </div>
+  `).join('');
+}
+
+// ── COLD REACTIVATION VIEW ──
+function buildColdView(){
+  const cold=LEADS.filter(l=>l.score<50&&l.status!=='won'&&l.status!=='lost');
+  const coldCount=document.getElementById('cold-count');
+  const potentialVal=document.getElementById('potential-value');
+  const coldList=document.getElementById('cold-leads-list');
+  if(!coldList) return;
+  if(coldCount) coldCount.textContent=cold.length;
+  if(potentialVal){
+    const total=cold.reduce((sum,l)=>sum+parseInt((l.deal||'0').replace(/[^0-9]/g,'')||0),0);
+    potentialVal.textContent='₹'+(total*0.1/100000).toFixed(1)+'L';
+  }
+  if(!cold.length){
+    coldList.innerHTML='<div style="text-align:center;padding:2rem;color:var(--ink-3);font-family:Instrument Serif,serif;font-size:18px;font-style:italic;">No cold leads — great pipeline health!</div>';
+    return;
+  }
+  coldList.innerHTML=cold.map(l=>`
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;" onclick="openDetail(${l.id})" style="cursor:pointer;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);">${l.name} <span style="font-size:11px;font-weight:400;color:var(--ink-3);">· ${l.company}</span></div>
+        <div style="font-size:12px;color:var(--ink-3);margin-top:2px;">Last contact: ${l.days} day${l.days!==1?'s':''} ago · Score: ${l.score} · ${l.deal}</div>
+      </div>
+      <div style="background:#dbeafe;color:#1e40af;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;">${l.score} pts</div>
+      <button onclick="event.stopPropagation();sendEmailToLead('${l.email}','${l.name}','${l.company}')" style="padding:7px 14px;border-radius:100px;background:#2563eb;color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📧 Reactivate</button>
+    </div>
+  `).join('');
+}
+
+function runReactivation(){
+  const cold=LEADS.filter(l=>l.score<50&&l.status!=='won'&&l.status!=='lost');
+  const btn=document.getElementById('reactivation-btn');
+  if(btn){btn.textContent='Sending...';btn.disabled=true;}
+  setTimeout(()=>{
+    cold.forEach(l=>{
+      l.timeline.unshift({type:'sent',text:'Reactivation message sent via WhatsApp',time:'Just now'});
+    });
+    if(btn){btn.textContent='❄️ Run reactivation now';btn.disabled=false;}
+    showToast('✓',cold.length+' cold lead reactivation messages sent via Make.com');
+  },2000);
+}
+
+// ── WEEKLY REPORTS VIEW ──
+function buildReportsView(){
+  const stats=document.getElementById('report-stats');
+  const preview=document.getElementById('report-preview');
+  const history=document.getElementById('report-history');
+  if(!stats) return;
+  const hot=LEADS.filter(l=>l.score>=75).length;
+  const won=LEADS.filter(l=>l.status==='won').length;
+  const total=LEADS.length;
+  const newLeads=3;
+  stats.innerHTML=[
+    {n:hot,l:'Hot leads',c:'var(--accent)'},
+    {n:won,l:'Deals won',c:'var(--green)'},
+    {n:total,l:'Total leads',c:'var(--ink)'},
+    {n:newLeads,l:'New this week',c:'var(--teal)'},
+  ].map(s=>`
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.25rem;text-align:center;">
+      <div style="font-family:'Instrument Serif',serif;font-size:36px;color:${s.c};line-height:1;">${s.n}</div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-top:4px;">${s.l}</div>
+    </div>
+  `).join('');
+  if(preview) preview.textContent=`Monday Pipeline Report
+${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}
+
+• Hot leads ready to close: ${hot}
+• New leads this week: ${newLeads}
+• Deals won this week: ${won}
+• Followups sent: 12
+• Cold leads reactivated: 2
+
+Top priority: Call Rahul Sharma (score 88)
+At risk: Sanjay Kumar — 4 days no contact
+
+Revvr automation running smoothly.`;
+  if(history) history.innerHTML=[
+    {date:'Mon 1 Apr','hot':6,'won':2},
+    {date:'Mon 25 Mar','hot':4,'won':1},
+    {date:'Mon 18 Mar','hot':8,'won':3},
+  ].map(r=>`
+    <div style="padding:.75rem 1.25rem;border-bottom:0.5px solid var(--paper-3);display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+      <div style="color:var(--ink-2);font-weight:500;">${r.date}</div>
+      <div style="display:flex;gap:12px;">
+        <span style="color:var(--accent);font-weight:600;">${r.hot} hot</span>
+        <span style="color:var(--green);font-weight:600;">${r.won} won</span>
+      </div>
+      <button onclick="showToast('📄','Opening report from ${r.date}')" style="font-size:11px;color:var(--teal);background:none;border:none;cursor:pointer;font-weight:600;">View</button>
+    </div>
+  `).join('');
+}
+
+function generateReport(){
+  showToast('📊','Report generated and ready to send');
+  buildReportsView();
+}
+
+// ── SETTINGS VIEW ──
+function buildSettingsView(){
+  const automations=[
+    {name:'Speed to lead',desc:'Day 1 WhatsApp within 60 seconds',active:true},
+    {name:'Followup sequences',desc:'Day 3, 7, 14 messages',active:true},
+    {name:'Hot lead alerts',desc:'WhatsApp alert when score ≥ 75',active:true},
+    {name:'Cold reactivation',desc:'Weekly campaign — Mondays 10am',active:true},
+    {name:'Weekly report',desc:'Monday 8am to sales head',active:true},
+  ];
+  const container=document.getElementById('automation-toggles');
+  if(!container) return;
+  container.innerHTML=automations.map((a,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);">${a.name}</div>
+        <div style="font-size:11px;color:var(--ink-3);">${a.desc}</div>
+      </div>
+      <div onclick="toggleAutomation(this,${i})" style="width:40px;height:22px;border-radius:100px;background:${a.active?'var(--teal)':'var(--paper-3)'};cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;" data-active="${a.active}">
+        <div style="position:absolute;top:3px;left:${a.active?'20px':'3px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleAutomation(el, idx){
+  const active=el.dataset.active==='true';
+  el.dataset.active=!active;
+  el.style.background=!active?'var(--teal)':'var(--paper-3)';
+  el.querySelector('div').style.left=!active?'20px':'3px';
+  const names=['Speed to lead','Followup sequences','Hot lead alerts','Cold reactivation','Weekly report'];
+  showToast(!active?'✓':'⏸',names[idx]+(!active?' enabled':' paused'));
+}
+
+function saveSettings(){
+  const company=document.getElementById('s-company')?.value;
+  const name=document.getElementById('s-name')?.value;
+  // Update sidebar client name
+  const clientName=document.getElementById('client-name');
+  const clientAvatar=document.getElementById('client-avatar');
+  if(clientName&&company) clientName.textContent=company;
+  if(clientAvatar&&name) clientAvatar.textContent=name.split(' ').map(w=>w[0]).join('').slice(0,2);
+  showToast('✓','Settings saved successfully');
+}
+
+// ── EXTEND switchView TO BUILD VIEWS ON DEMAND ──
+const _origSwitchView=switchView;
+switchView=function(name,navEl){
+  _origSwitchView(name,navEl);
+  if(name==='hot-leads') buildHotLeads();
+  if(name==='cold-reactivation') buildColdView();
+  if(name==='weekly-reports') buildReportsView();
+  if(name==='settings') buildSettingsView();
+};
+
+
+
+// ══════════════════════════════════════════════
+// REVVR API INTEGRATION FUNCTIONS
+// ══════════════════════════════════════════════
+
+// ── SEND EMAIL TO LEAD (replaces WhatsApp) ──
+function sendEmailToLead(email, name, company) {
+  if (!email || email === 'undefined') {
+    showToast('⚠️', 'No email address for this lead');
+    return;
+  }
+  const firstName = name.split(' ')[0];
+  const subject = encodeURIComponent(`Following up — ${company}`);
+  const body = encodeURIComponent(
+    `Hi ${firstName},\n\nJust wanted to follow up on our conversation. ` +
+    `Would love to show you how Revvr can help ${company} recover more deals from your pipeline.\n\n` +
+    `Are you available for a quick 15-minute call this week?\n\nBest,`
+  );
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+  showToast('📧', `Opening email to ${name}`);
+}
+
+// ── UPDATE LEAD SCORE + TRIGGER HOT LEAD ALERT IF NEEDED ──
+function updateScore(leadId, newScore) {
+  const lead = LEADS.find(l => l.id === leadId);
+  if (!lead) return;
+
+  const oldScore = lead.score;
+  lead.score = parseInt(newScore);
+
+  // Reclassify status based on score
+  if (lead.score >= 75) lead.status = 'hot';
+  else if (lead.score >= 50) lead.status = 'warm';
+  else if (lead.score >= 20) lead.status = 'cold';
+  else lead.status = 'dead';
+
+  lead.timeline.unshift({
+    type: 'added',
+    text: `Score updated from ${oldScore} to ${newScore}`,
+    time: 'Just now'
+  });
+
+  // Trigger hot lead alert API if score just crossed 75
+  if (lead.score >= 75 && oldScore < 75) {
+    fetch('/api/hot-lead-alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        record: {
+          id: lead.id,
+          name: lead.name,
+          email: lead.email || '',
+          phone: lead.phone || '',
+          company: lead.company,
+          score: lead.score,
+          deal_value: parseInt((lead.deal || '0').replace(/[^0-9]/g, '')),
+          status: oldScore >= 75 ? 'hot' : 'warm',
+          last_contact_date: new Date().toISOString().split('T')[0],
+          client_id: lead.client_id || ''
+        }
+      })
+    })
+    .then(() => showToast('🔥', `Hot lead alert sent! ${lead.name} scored ${newScore}`))
+    .catch(() => showToast('🔥', `${lead.name} is now a hot lead!`));
+  } else {
+    showToast('🎯', `Score updated to ${newScore}`);
+  }
+
+  buildPipeline();
+  openDetail(leadId);
+}
+
+// ── MARK LEAD AS WON OR LOST ──
+function markStatus(leadId, status) {
+  const lead = LEADS.find(l => l.id === leadId);
+  if (!lead) return;
+  lead.status = status;
+  lead.timeline.unshift({
+    type: status === 'won' ? 'replied' : 'added',
+    text: `Deal marked as ${status}`,
+    time: 'Just now'
+  });
+
+  // Update in Supabase if connected
+  if (typeof sb !== 'undefined' && SUPABASE_URL !== 'https://YOUR_PROJECT_ID.supabase.co') {
+    sb.from('leads').update({ status }).eq('id', leadId)
+      .then(() => console.log(`Lead ${leadId} marked as ${status}`))
+      .catch(err => console.error('Supabase update error:', err));
+  }
+
+  buildPipeline();
+  closeDetail();
+  const icon = status === 'won' ? '🎉' : '😔';
+  showToast(icon, `${lead.name} marked as ${status}!`);
+}
+
+// ── OPEN PROPOSAL GENERATOR ──
+function openProposalFor(name, company) {
+  showToast('📄', `Opening proposal generator for ${name}`);
+  setTimeout(() => window.open('/demo', '_blank'), 400);
+}
+
+// ── SEND EMAIL FROM FOLLOWUP COMPOSER ──
+function sendMsg() {
+  const name = document.getElementById('compose-name').textContent;
+  const editEl = document.getElementById('compose-edit');
+  const msgEl = document.getElementById('compose-msg');
+  const message = editEl.value.trim() || msgEl.textContent;
+
+  // Find the lead's email
+  const lead = LEADS.find(l => l.name === name);
+  const email = lead?.email;
+
+  if (email && email !== 'undefined') {
+    const subject = encodeURIComponent('Following up from Revvr');
+    const body = encodeURIComponent(message);
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+    showToast('📧', `Email draft opened for ${name}`);
+  } else {
+    showToast('📧', `Message ready to send to ${name}`);
+  }
+  editEl.value = '';
+}
+
+// ══════════════════════════════════════════════
+// END API INTEGRATION FUNCTIONS
+// ══════════════════════════════════════════════
+</script>
+
+<!-- ADD LEAD MODAL -->
+<div id="add-lead-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,15,.5);z-index:400;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--paper);border-radius:var(--rl);padding:1.75rem;width:100%;max-width:480px;margin:1rem;animation:slideUp .3s cubic-bezier(.22,1,.36,1);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+      <div style="font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);font-style:italic;">Add new lead</div>
+      <button onclick="closeAddLead()" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--paper-3);background:transparent;cursor:pointer;font-size:16px;color:var(--ink-3);">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Full name *</div><input id="al-name" type="text" placeholder="Rahul Sharma" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Company</div><input id="al-company" type="text" placeholder="TechCorp India" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Phone *</div><input id="al-phone" type="tel" placeholder="+91 98765 43210" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Email</div><input id="al-email" type="email" placeholder="rahul@company.com" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Deal value (₹)</div><input id="al-deal" type="number" placeholder="80000" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"/></div>
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Source</div>
+      <select id="al-source" style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;cursor:pointer;">
+        <option value="manual">Manual entry</option>
+        <option value="website_form">Website form</option>
+        <option value="whatsapp">WhatsApp</option>
+        <option value="referral">Referral</option>
+        <option value="csv_import">CSV import</option>
+      </select></div>
+    </div>
+    <div style="margin-bottom:1.25rem;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:4px;">Notes</div>
+      <textarea id="al-notes" rows="2" placeholder="Any context about this lead..." style="width:100%;padding:9px 12px;border:1px solid var(--paper-3);border-radius:var(--rs);font-family:'Outfit',sans-serif;font-size:13px;color:var(--ink);background:var(--paper-2);outline:none;resize:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--paper-3)'"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeAddLead()" style="flex:1;padding:11px;border-radius:100px;border:1px solid var(--paper-3);background:transparent;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;">Cancel</button>
+      <button onclick="submitAddLead()" style="flex:2;padding:11px;border-radius:100px;background:var(--accent);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='var(--accent-d)'" onmouseout="this.style.background='var(--accent)'">Add lead + trigger Day 1 →</button>
+    </div>
+    <div id="al-error" style="font-size:12px;color:var(--red);margin-top:8px;display:none;text-align:center;"></div>
+  </div>
+</div>
+
+<!-- CSV IMPORT MODAL -->
+<div id="csv-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,15,.5);z-index:400;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:var(--paper);border-radius:var(--rl);padding:1.75rem;width:100%;max-width:480px;margin:1rem;animation:slideUp .3s cubic-bezier(.22,1,.36,1);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+      <div style="font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);font-style:italic;">Import leads from CSV</div>
+      <button onclick="closeCSV()" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--paper-3);background:transparent;cursor:pointer;font-size:16px;color:var(--ink-3);">✕</button>
+    </div>
+    <div id="csv-drop-zone" style="border:2px dashed var(--paper-3);border-radius:var(--r);padding:2.5rem;text-align:center;margin-bottom:1.25rem;transition:all .2s;cursor:pointer;" ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-l)'" ondragleave="this.style.borderColor='var(--paper-3)';this.style.background='transparent'" ondrop="handleCSVDrop(event)" onclick="document.getElementById('csv-file-input').click()">
+      <div style="font-size:28px;margin-bottom:.75rem;">📂</div>
+      <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;">Drop your CSV here</div>
+      <div style="font-size:12px;color:var(--ink-3);">or click to browse · max 500 leads</div>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="handleCSVFile(this)"/>
+    </div>
+    <div style="background:var(--paper-2);border-radius:var(--r);padding:1rem;margin-bottom:1.25rem;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);margin-bottom:8px;">Required CSV columns</div>
+      <div style="font-family:monospace;font-size:12px;color:var(--ink-2);background:#fff;padding:8px 10px;border-radius:var(--rs);border:1px solid var(--paper-3);">name, phone, company, email, deal_value</div>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:6px;">email and deal_value are optional · first row must be headers</div>
+    </div>
+    <div id="csv-preview" style="display:none;margin-bottom:1.25rem;"></div>
+    <button onclick="submitCSV()" id="csv-submit-btn" style="width:100%;padding:11px;border-radius:100px;background:var(--accent);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='var(--accent-d)'" onmouseout="this.style.background='var(--accent)'">Import leads</button>
+    

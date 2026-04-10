@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revvr — Rev Up Your Revenue</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0a0a0f;--ink-2:#2d2d3a;--ink-3:#6b6b80;
+  --paper:#fafaf7;--paper-2:#f2f2ee;--paper-3:#e4e4de;
+  --accent:#ff4d1c;--accent-l:#fff0ec;--accent-d:#d93a0c;
+  --teal:#0d9488;--teal-l:#e0f7f5;--teal-d:#0a7060;
+  --r:14px;--rs:8px;--rl:24px;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden;}
+
+/* ── CUSTOM CURSOR ── */
+.cursor{width:12px;height:12px;border-radius:50%;background:var(--accent);position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,opacity .2s;mix-blend-mode:multiply;}
+.cursor.big{width:40px;height:40px;opacity:.4;}
+
+/* ── PAGE LOAD ANIMATION ── */
+.page-loader{position:fixed;inset:0;background:var(--ink);z-index:9998;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease,visibility .6s ease;}
+.page-loader.done{opacity:0;visibility:hidden;}
+.loader-brand{font-family:'Instrument Serif',serif;font-size:48px;color:#fff;font-style:italic;animation:loaderPulse 1s ease infinite alternate;}
+@keyframes loaderPulse{from{opacity:.3;}to{opacity:1;}}
+
+/* ── SCROLL REVEALS ── */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1);}
+.reveal.on{opacity:1;transform:none;}
+.reveal-l{opacity:0;transform:translateX(-40px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1);}
+.reveal-l.on{opacity:1;transform:none;}
+.reveal-r{opacity:0;transform:translateX(40px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1);}
+.reveal-r.on{opacity:1;transform:none;}
+.reveal-scale{opacity:0;transform:scale(.92);transition:opacity .6s ease,transform .6s ease;}
+.reveal-scale.on{opacity:1;transform:none;}
+.stagger>*{opacity:0;transform:translateY(24px);transition:opacity .5s ease,transform .5s ease;}
+.stagger.on>*:nth-child(1){opacity:1;transform:none;transition-delay:.06s;}
+.stagger.on>*:nth-child(2){opacity:1;transform:none;transition-delay:.14s;}
+.stagger.on>*:nth-child(3){opacity:1;transform:none;transition-delay:.22s;}
+.stagger.on>*:nth-child(4){opacity:1;transform:none;transition-delay:.30s;}
+.stagger.on>*:nth-child(5){opacity:1;transform:none;transition-delay:.38s;}
+.stagger.on>*:nth-child(6){opacity:1;transform:none;transition-delay:.46s;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:200;background:rgba(250,250,247,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--paper-3);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;transition:box-shadow .3s;}
+nav.scrolled{box-shadow:0 1px 20px rgba(10,10,15,.06);}
+.brand{font-family:'Outfit',sans-serif;font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-1px;text-decoration:none;}
+.brand em{font-style:normal;color:var(--accent);}
+.nav-links{display:flex;gap:1.5rem;list-style:none;}
+.nav-links a{font-size:14px;color:var(--ink-3);text-decoration:none;font-weight:500;transition:color .2s;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1.5px;background:var(--accent);transform:scaleX(0);transition:transform .25s ease;transform-origin:left;}
+.nav-links a:hover{color:var(--ink);}
+.nav-links a:hover::after{transform:scaleX(1);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-demo-link{font-size:13px;color:var(--accent);font-weight:700;text-decoration:none;padding:7px 14px;border-radius:100px;border:1px solid rgba(255,77,28,.3);transition:all .2s;background:var(--accent-l);}
+.nav-demo-link:hover{background:var(--accent);color:#fff;}
+.nav-login-link{font-size:13px;color:var(--ink-3);font-weight:600;text-decoration:none;padding:7px 14px;border-radius:100px;border:1px solid var(--paper-3);transition:all .2s;background:transparent;}
+.nav-login-link:hover{border-color:var(--ink-3);color:var(--ink);}
+.nav-dashboard-link{font-size:13px;color:var(--teal-d);font-weight:700;text-decoration:none;padding:7px 14px;border-radius:100px;border:1px solid rgba(13,148,136,.3);transition:all .2s;background:var(--teal-l);}
+.nav-dashboard-link:hover{background:var(--teal);color:#fff;}
+.nav-cta{background:var(--ink);color:var(--paper);border:none;padding:9px 22px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none;}
+.nav-cta:hover{background:var(--accent);transform:translateY(-1px);}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
+.hamburger span{width:22px;height:2px;background:var(--ink);border-radius:2px;transition:all .3s;}
+.mobile-menu{display:none;position:fixed;inset:0;background:var(--paper);z-index:300;flex-direction:column;align-items:center;justify-content:center;gap:2rem;}
+.mobile-menu.open{display:flex;}
+.mobile-menu a{font-family:'Instrument Serif',serif;font-size:36px;color:var(--ink);text-decoration:none;font-weight:400;font-style:italic;transition:color .2s;}
+.mobile-menu a:hover{color:var(--accent);}
+.mobile-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;cursor:pointer;color:var(--ink-3);font-family:'Outfit',sans-serif;}
+
+/* ── HERO ── */
+.hero{max-width:980px;margin:0 auto;padding:6rem 2rem 3rem;text-align:center;position:relative;}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;background:var(--accent-l);color:var(--accent-d);font-size:12px;font-weight:700;padding:5px 16px;border-radius:100px;margin-bottom:2rem;letter-spacing:.05em;text-transform:uppercase;border:1px solid rgba(255,77,28,.2);animation:fadeDown .7s ease both;}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-14px);}to{opacity:1;transform:none;}}
+.pill-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(42px,7.5vw,88px);font-weight:400;line-height:1.04;letter-spacing:-1px;color:var(--ink);margin-bottom:1.5rem;animation:heroIn .8s ease .1s both;}
+@keyframes heroIn{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:none;}}
+.hero h1 i{font-style:italic;color:var(--accent);}
+.hero h1 .word-anim{display:inline-block;animation:wordFloat 3s ease-in-out infinite;}
+@keyframes wordFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+.hero-sub{font-size:18px;color:var(--ink-3);max-width:560px;margin:0 auto 2.5rem;font-weight:400;line-height:1.75;animation:heroIn .8s ease .25s both;}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:3rem;animation:heroIn .8s ease .4s both;}
+.btn-p{background:var(--accent);color:#fff;border:none;padding:15px 32px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;position:relative;overflow:hidden;}
+.btn-p::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);transform:translateX(-100%);transition:transform .3s ease;}
+.btn-p:hover::before{transform:translateX(0);}
+.btn-p:hover{background:var(--accent-d);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,77,28,.3);}
+.btn-o{background:transparent;color:var(--ink-2);border:1.5px solid var(--paper-3);padding:15px 32px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .25s;text-decoration:none;display:inline-block;}
+.btn-o:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-2px);}
+.live-counter{display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--paper-3);border-radius:100px;padding:8px 20px;font-size:13px;color:var(--ink-2);margin-bottom:1.5rem;animation:heroIn .8s ease .55s both;box-shadow:0 2px 8px rgba(10,10,15,.04);}
+.live-counter strong{color:var(--ink);font-weight:700;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:livepulse 2s infinite;}
+@keyframes livepulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5);}50%{box-shadow:0 0 0 5px rgba(34,197,94,0);}}
+
+/* ── STATS STRIP ── */
+.stats-strip{display:flex;max-width:680px;margin:0 auto;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;background:#fff;animation:heroIn .8s ease .65s both;box-shadow:0 2px 12px rgba(10,10,15,.05);}
+.stat{flex:1;padding:1.5rem .75rem;text-align:center;border-right:1px solid var(--paper-3);transition:background .2s;}
+.stat:hover{background:var(--paper-2);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:'Instrument Serif',serif;font-size:42px;font-weight:400;color:var(--ink);display:block;line-height:1;margin-bottom:5px;letter-spacing:-1px;}
+.stat-l{font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;line-height:1.4;}
+
+/* ── MOSAIC ── */
+.mosaic{display:grid;grid-template-columns:1.2fr 1fr 1fr;grid-template-rows:210px 170px;gap:12px;max-width:980px;margin:3.5rem auto 0;padding:0 2rem;}
+.mosaic-card{border-radius:var(--r);overflow:hidden;position:relative;}
+.mosaic-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.25,.46,.45,.94);}
+.mosaic-card:hover img{transform:scale(1.07);}
+.mosaic-card.tall{grid-row:span 2;}
+.mosaic-ov{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(10,10,15,.76));padding:.85rem 1rem;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;transform:translateY(4px);transition:transform .3s;}
+.mosaic-card:hover .mosaic-ov{transform:translateY(0);}
+
+/* ── TRUST BAR ── */
+.trust-bar{background:var(--ink);padding:1.1rem 0;overflow:hidden;margin-top:3.5rem;}
+.trust-track{display:flex;gap:3rem;animation:trust 26s linear infinite;white-space:nowrap;}
+.trust-track:hover{animation-play-state:paused;}
+@keyframes trust{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.trust-item{display:flex;align-items:center;gap:.85rem;flex-shrink:0;font-family:'Instrument Serif',serif;font-size:18px;color:#2a2a38;font-style:italic;}
+.trust-sep{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+
+/* ── SECTION ── */
+.section{max-width:980px;margin:0 auto;padding:5.5rem 2rem;}
+.s-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin-bottom:.85rem;}
+.s-title{font-family:'Instrument Serif',serif;font-size:clamp(30px,5vw,54px);font-weight:400;line-height:1.1;color:var(--ink);margin-bottom:.85rem;letter-spacing:-.5px;}
+.s-title i{font-style:italic;color:var(--ink-3);}
+.s-sub{font-size:16px;color:var(--ink-3);max-width:500px;line-height:1.75;font-weight:400;}
+
+/* ── PROBLEMS ── */
+.prob-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:2.5rem;}
+.prob-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.5rem;transition:all .35s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden;cursor:default;}
+.prob-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);transform:scaleX(0);transition:transform .35s ease;transform-origin:left;}
+.prob-card:hover{transform:translateY(-4px);border-color:rgba(255,77,28,.2);box-shadow:0 12px 32px rgba(10,10,15,.07);}
+.prob-card:hover::after{transform:scaleX(1);}
+.prob-icon{font-size:24px;margin-bottom:12px;display:inline-block;transition:transform .3s;}
+.prob-card:hover .prob-icon{transform:scale(1.15) rotate(-5deg);}
+.prob-title{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:6px;}
+.prob-desc{font-size:13px;color:var(--ink-3);line-height:1.65;}
+.prob-loss{margin-top:12px;padding-top:12px;border-top:1px solid var(--paper-3);font-size:12px;font-weight:700;color:var(--accent);}
+
+/* ── FLOATING FEATURE CARDS ── */
+.feat-float{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:2.5rem;}
+.feat-float-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.5rem;transition:all .35s cubic-bezier(.22,1,.36,1);position:relative;}
+.feat-float-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(10,10,15,.08);border-color:var(--teal);}
+.ffc-icon{width:44px;height:44px;border-radius:var(--rs);background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;transition:transform .3s;}
+.feat-float-card:hover .ffc-icon{transform:scale(1.1);}
+.ffc-title{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:6px;}
+.ffc-desc{font-size:13px;color:var(--ink-3);line-height:1.65;}
+.ffc-tag{display:inline-block;margin-top:12px;background:var(--teal-l);color:var(--teal-d);font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;letter-spacing:.03em;}
+
+/* ── SPLIT ── */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;margin-top:3.5rem;}
+.split.flip{direction:rtl;}
+.split.flip>*{direction:ltr;}
+.split-img{border-radius:var(--rl);overflow:hidden;aspect-ratio:4/3;position:relative;}
+.split-img img{width:100%;height:100%;object-fit:cover;transition:transform .7s ease;}
+.split-img:hover img{transform:scale(1.05);}
+.split-badge{position:absolute;top:16px;left:16px;background:rgba(10,10,15,.76);backdrop-filter:blur(10px);color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:100px;letter-spacing:.04em;}
+.feat-list{display:flex;flex-direction:column;gap:18px;margin-top:1.5rem;}
+.feat-item{display:flex;gap:14px;align-items:flex-start;}
+.feat-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px;transition:transform .3s;}
+.feat-item:hover .feat-dot{transform:scale(1.4);}
+.feat-item-title{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:3px;}
+.feat-item-desc{font-size:13px;color:var(--ink-3);line-height:1.65;}
+
+/* ── HOW IT WORKS ── */
+.dark-section{background:var(--ink);padding:5.5rem 0;}
+.dark-inner{max-width:980px;margin:0 auto;padding:0 2rem;}
+.dark-inner .s-label{color:#ff6b40;}
+.dark-inner .s-title{color:#fff;}
+.dark-inner .s-sub{color:#6b6b80;}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:2.5rem;background:#1a1a24;border-radius:var(--r);overflow:hidden;border:1px solid #1a1a24;}
+.step{background:#10101a;padding:1.75rem 1.5rem;transition:background .3s;cursor:pointer;}
+.step:hover,.step.active-step{background:#14141f;}
+.step-n{font-family:'Instrument Serif',serif;font-size:54px;color:#1e1e2e;line-height:1;margin-bottom:10px;font-weight:400;transition:color .3s;}
+.step:hover .step-n,.step.active-step .step-n{color:#2e2e44;}
+.step-title{font-weight:700;font-size:14px;color:#fff;margin-bottom:7px;}
+.step-desc{font-size:13px;color:#6b6b80;line-height:1.65;}
+.step-week{display:inline-block;margin-top:12px;background:rgba(255,77,28,.15);color:#ff6b40;font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;letter-spacing:.05em;}
+.step-detail{background:#0a0a14;border-radius:var(--r);padding:1.5rem;margin-top:12px;display:none;}
+.step-detail.show{display:block;animation:fdIn .35s ease;}
+@keyframes fdIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+.step-detail-title{font-family:'Instrument Serif',serif;font-size:20px;color:#fff;margin-bottom:.85rem;font-style:italic;}
+.step-detail-list{display:flex;flex-direction:column;gap:9px;}
+.step-detail-item{font-size:13px;color:#9090a8;display:flex;gap:10px;}
+.step-detail-item::before{content:'→';color:var(--accent);flex-shrink:0;}
+.stk{display:flex;flex-wrap:wrap;gap:8px;margin-top:2rem;}
+.stk-pill{background:#1a1a24;border:1px solid #2a2a38;border-radius:100px;padding:7px 18px;font-size:13px;font-weight:500;color:#9090a8;transition:all .2s;}
+.stk-pill:hover{border-color:#ff6b40;color:#ff6b40;transform:translateY(-2px);}
+
+/* ── NUMBERS ── */
+.numbers-dark{background:var(--ink);padding:5.5rem 0;}
+.numbers-inner{max-width:980px;margin:0 auto;padding:0 2rem;}
+.numbers-inner .s-title{color:#fff;}
+.numbers-inner .s-sub{color:#6b6b80;}
+.numbers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:2.5rem;}
+.num-card{background:#100f0d;border:1px solid #1e1d1a;border-radius:var(--r);padding:1.5rem;text-align:center;transition:all .3s;}
+.num-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 12px 30px rgba(10,10,15,.3);}
+.num-val{font-family:'Instrument Serif',serif;font-size:46px;font-weight:400;color:#fff;display:block;letter-spacing:-1.5px;line-height:1;}
+.num-acc{color:var(--accent);}
+.num-label{font-size:12px;color:#6b6b80;margin-top:7px;line-height:1.5;}
+
+/* ── TESTIMONIALS ── */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:2.5rem;}
+.testi{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);padding:1.5rem;transition:all .3s;}
+.testi:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(10,10,15,.07);border-color:rgba(255,77,28,.2);}
+.testi-stars{color:#f59e0b;font-size:14px;margin-bottom:10px;letter-spacing:2px;}
+.testi-quote{font-family:'Instrument Serif',serif;font-size:15px;color:var(--ink-2);line-height:1.7;margin-bottom:1rem;font-style:italic;font-weight:400;}
+.testi-author{display:flex;align-items:center;gap:10px;}
+.testi-avatar{width:38px;height:38px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--paper-3);}
+.testi-avatar img{width:100%;height:100%;object-fit:cover;}
+.testi-name{font-size:13px;font-weight:700;color:var(--ink);}
+.testi-role{font-size:11px;color:var(--ink-3);}
+
+/* ── BLOG PREVIEW ── */
+.blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:2rem;}
+.blog-card{background:#fff;border:1px solid var(--paper-3);border-radius:var(--r);overflow:hidden;transition:all .3s;display:block;text-decoration:none;}
+.blog-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(10,10,15,.07);border-color:rgba(255,77,28,.2);}
+.blog-card img{width:100%;height:160px;object-fit:cover;display:block;transition:transform .6s ease;}
+.blog-card:hover img{transform:scale(1.05);}
+.blog-card-body{padding:1rem;}
+.blog-cat{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:7px;}
+.blog-title{font-family:'Instrument Serif',serif;font-size:16px;font-weight:400;color:var(--ink);line-height:1.4;margin-bottom:7px;}
+.blog-meta{font-size:11px;color:var(--ink-3);}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:2.5rem;}
+.price-card{background:#fff;border:1.5px solid var(--paper-3);border-radius:var(--r);padding:1.75rem;transition:all .3s;position:relative;}
+.price-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(10,10,15,.08);}
+.price-card.pop{border-color:var(--accent);}
+.pop-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:4px 16px;border-radius:100px;white-space:nowrap;letter-spacing:.04em;}
+.p-tier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);margin-bottom:4px;}
+.p-team{font-size:12px;color:var(--ink-3);margin-bottom:1rem;}
+.p-price{font-family:'Instrument Serif',serif;font-size:46px;font-weight:400;color:var(--ink);letter-spacing:-1.5px;line-height:1;margin-bottom:3px;}
+.p-note{font-size:12px;color:var(--ink-3);margin-bottom:1.5rem;}
+.p-feats{list-style:none;margin-bottom:1.5rem;display:flex;flex-direction:column;gap:9px;}
+.p-feats li{font-size:13px;color:var(--ink-2);display:flex;align-items:flex-start;gap:8px;}
+.p-feats li::before{content:'✓';color:var(--teal);font-weight:800;font-size:12px;flex-shrink:0;margin-top:1px;}
+.p-btn{width:100%;padding:12px;border-radius:100px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;border:1.5px solid var(--paper-3);background:transparent;color:var(--ink);}
+.p-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+.p-btn.pop-btn{background:var(--accent);color:#fff;border-color:var(--accent);}
+.p-btn.pop-btn:hover{background:var(--accent-d);}
+.roi-bar{background:var(--accent-l);border:1px solid rgba(255,77,28,.2);border-radius:var(--r);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;}
+.roi-bar h3{font-family:'Instrument Serif',serif;font-size:20px;color:var(--accent-d);font-style:italic;margin-bottom:3px;}
+.roi-bar p{font-size:13px;color:var(--ink-3);}
+.roi-nums{display:flex;gap:2rem;flex-wrap:wrap;}
+.roi-num{text-align:center;}
+.roi-num-val{font-family:'Instrument Serif',serif;font-size:28px;color:var(--accent-d);display:block;font-weight:400;line-height:1;}
+.roi-num-lbl{font-size:11px;color:var(--ink-3);margin-top:2px;}
+
+/* ── CTA ── */
+.cta-wrap{background:var(--ink);padding:6rem 0;position:relative;overflow:hidden;}
+.cta-wrap::before{content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(255,77,28,.08) 0%,transparent 70%);animation:glowPulse 4s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{transform:translateX(-50%) scale(1);}50%{transform:translateX(-50%) scale(1.1);}}
+.cta-inner{max-width:640px;margin:0 auto;padding:0 2rem;position:relative;}
+.cta-inner h2{font-family:'Instrument Serif',serif;font-size:clamp(32px,6vw,62px);font-weight:400;color:#fff;line-height:1.1;margin-bottom:.85rem;letter-spacing:-.5px;}
+.cta-inner h2 i{color:#ff6b40;font-style:italic;}
+.cta-inner p{font-size:15px;color:#6b6b80;margin-bottom:2rem;line-height:1.7;}
+.cta-form-card{background:#100f0d;border:1px solid #1e1d1a;border-radius:var(--rl);padding:1.75rem;}
+.cta-g-btn{width:100%;padding:12px;border-radius:var(--rs);border:1px solid #2a2a38;background:#1a1a24;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:600;color:#d4d0c8;transition:all .2s;font-family:'Outfit',sans-serif;}
+.cta-g-btn:hover{border-color:#6b6b80;color:#fff;transform:translateY(-1px);}
+.cta-divider{display:flex;align-items:center;gap:10px;margin:1rem 0;}
+.cta-divider::before,.cta-divider::after{content:'';flex:1;height:1px;background:#1e1d1a;}
+.cta-divider span{font-size:12px;color:#4a4a5a;}
+.cta-fields{display:flex;flex-direction:column;gap:10px;}
+.cta-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cf-group{display:flex;flex-direction:column;gap:4px;}
+.cf-label{font-size:10px;font-weight:700;color:#6b6b80;text-transform:uppercase;letter-spacing:.07em;}
+.cf-input{border:1px solid #1e1d1a;border-radius:var(--rs);padding:10px 13px;font-family:'Outfit',sans-serif;font-size:13px;color:#d4d0c8;background:#0a0a14;outline:none;transition:border-color .2s;width:100%;}
+.cf-input:focus{border-color:var(--accent);}
+.cf-input::placeholder{color:#4a4a5a;}
+.cf-select{border:1px solid #1e1d1a;border-radius:var(--rs);padding:10px 13px;font-family:'Outfit',sans-serif;font-size:13px;color:#d4d0c8;background:#0a0a14;outline:none;cursor:pointer;width:100%;}
+.slot-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.slot-btn{padding:6px 13px;border-radius:100px;font-size:11px;font-weight:600;border:1px solid #1e1d1a;background:transparent;color:#6b6b80;cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif;}
+.slot-btn.sel{background:rgba(255,77,28,.15);border-color:var(--accent);color:#ff6b40;}
+.cf-submit{width:100%;margin-top:12px;padding:13px;border-radius:100px;background:var(--accent);color:#fff;border:none;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
+.cf-submit:hover{background:var(--accent-d);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,77,28,.3);}
+.cta-note{font-size:11px;color:#4a4a5a;text-align:center;margin-top:10px;transition:color .3s;}
+.cta-success{display:none;text-align:center;padding:2rem;}
+.cta-success-icon{width:52px;height:52px;border-radius:50%;background:rgba(22,163,74,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;animation:successPop .5s cubic-bezier(.22,1,.36,1);}
+@keyframes successPop{from{transform:scale(0);}to{transform:scale(1);}}
+.cta-success h3{font-family:'Instrument Serif',serif;font-size:24px;color:#fff;margin-bottom:7px;font-style:italic;}
+.cta-success p{font-size:13px;color:#6b6b80;line-height:1.7;}
+.trust-row{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-top:2rem;}
+.trust-item-sm{display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4a5a;}
+
+/* ── STICKY BAR ── */
+.sticky-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--ink);border-top:1px solid #1e1d1a;padding:.85rem 1.5rem;z-index:100;justify-content:space-between;align-items:center;animation:slideUp .4s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:none;}}
+.sticky-bar-text{font-size:13px;color:#d4d0c8;font-weight:500;}
+.sticky-bar-btn{background:var(--accent);color:#fff;border:none;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .2s;}
+.sticky-bar-btn:hover{background:var(--accent-d);}
+
+/* ── FOOTER ── */
+footer{background:#070710;border-top:1px solid #14141f;padding:2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.footer-brand{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-1px;}
+.footer-brand em{font-style:normal;color:var(--accent);}
+.footer-links{display:flex;gap:1.5rem;flex-wrap:wrap;}
+.footer-links a{font-size:12px;color:#4a4a5a;text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:#6b6b80;}
+.footer-note{font-size:12px;color:#4a4a5a;}
+.div-line{max-width:980px;margin:0 auto;padding:0 2rem;border-top:1px solid var(--paper-3);}
+
+/* ── FLOATING ORBS (background decoration) ── */
+.orb{position:absolute;border-radius:50%;pointer-events:none;z-index:0;opacity:.04;}
+.orb-1{width:400px;height:400px;background:var(--accent);top:-100px;right:-80px;animation:orbDrift 8s ease-in-out infinite alternate;}
+.orb-2{width:300px;height:300px;background:var(--teal);bottom:-80px;left:-60px;animation:orbDrift 10s ease-in-out infinite alternate-reverse;}
+@keyframes orbDrift{from{transform:translate(0,0);}to{transform:translate(20px,20px);}}
+
+@media(max-width:768px){
+  .nav-links,.nav-demo-link,.nav-cta,.nav-login-link,.nav-dashboard-link{display:none;}
+  .hamburger{display:flex;}
+  .mosaic{grid-template-columns:1fr 1fr;grid-template-rows:auto;}
+  .mosaic-card.tall{grid-row:span 1;}
+  .split,.testi-grid,.pricing-grid,.numbers-grid,.blog-grid,.feat-float,.cta-row{grid-template-columns:1fr;}
+  .split.flip{direction:ltr;}
+  .steps{grid-template-columns:1fr 1fr;}
+  .stats-strip{flex-direction:column;}
+  .stat{border-right:none;border-bottom:1px solid var(--paper-3);}
+  .stat:last-child{border-bottom:none;}
+  .sticky-bar{display:flex;}
+  body{padding-bottom:70px;}
+  .roi-bar{flex-direction:column;}
+  .orb{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+
+<!-- PAGE LOADER -->
+<div class="page-loader" id="loader">
+  <div class="loader-brand">revvr.</div>
+</div>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mmenu">
+  <span class="mobile-close" onclick="closeMobile()">✕</span>
+  <a href="#problem" onclick="closeMobile()">Problem</a>
+  <a href="#features" onclick="closeMobile()">Features</a>
+  <a href="#how" onclick="closeMobile()">How it works</a>
+  <a href="#pricing" onclick="closeMobile()">Pricing</a>
+  <a href="/blog" target="_blank" onclick="closeMobile()">Blog</a>
+  <a href="/login" target="_blank" onclick="closeMobile()" style="color:var(--ink-3);font-size:28px;">Login</a>
+  <a href="/dashboard" target="_blank" onclick="closeMobile()" style="color:var(--teal);">Dashboard ↗</a>
+  <a href="/demo" target="_blank" onclick="closeMobile()" style="color:var(--accent);">Live Demo ↗</a>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="brand">revvr<em>.</em></a>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="/blog" target="_blank">Blog</a></li>
+    <li><a href="/dashboard" target="_blank" style="color:var(--teal);font-weight:700;">Dashboard ↗</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="/login" target="_blank" class="nav-login-link">Login</a>
+    <a href="/dashboard" target="_blank" class="nav-dashboard-link">Dashboard ↗</a>
+    <a href="/demo" target="_blank" class="nav-demo-link">Try demo ↗</a>
+    <a href="#pricing" class="nav-cta">Get started</a>
+    <div class="hamburger" onclick="openMobile()"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero" style="position:relative;">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div style="position:relative;z-index:1;">
+    <div class="hero-pill"><div class="pill-dot"></div>AI Sales Engine · Built for India</div>
+    <h1>Your team loses deals<br>not from bad pitches —<br>from <i><span class="word-anim">silence</span></i> after them.</h1>
+    <p class="hero-sub">Revvr automatically follows up, scores every lead, drafts proposals, and updates your CRM — so your team focuses only on one thing: closing.</p>
+    <div class="live-counter"><div class="live-dot"></div><span><strong id="live-count">247</strong> deals recovered this month across all clients</span></div>
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-p">Get started →</a>
+      <a href="/demo" target="_blank" class="btn-o">Try live demo ↗</a>
+    </div>
+    <div class="stats-strip">
+      <div class="stat"><span class="stat-n" data-target="40" data-suffix="%">0%</span><div class="stat-l">deals lost to<br>no followup</div></div>
+      <div class="stat"><span class="stat-n">3 hrs</span><div class="stat-l">wasted writing<br>each proposal</div></div>
+      <div class="stat"><span class="stat-n" data-target="33" data-suffix="%">0%</span><div class="stat-l">teams still not<br>using AI in 2026</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MOSAIC -->
+<div class="mosaic reveal">
+  <div class="mosaic-card tall"><img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="Team"/><div class="mosaic-ov">Team collaboration</div></div>
+  <div class="mosaic-card"><img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?w=600&q=80" alt="Meeting"/><div class="mosaic-ov">Pipeline visibility</div></div>
+  <div class="mosaic-card"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80" alt="Pro"/><div class="mosaic-ov">Sales excellence</div></div>
+  <div class="mosaic-card"><img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80" alt="Analytics"/><div class="mosaic-ov">Revenue recovered</div></div>
+  <div class="mosaic-card"><img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80" alt="Closing"/><div class="mosaic-ov">Close more deals</div></div>
+</div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-track">
+    <span class="trust-item"><span class="trust-sep"></span>Speed to lead — under 60 seconds</span>
+    <span class="trust-item"><span class="trust-sep"></span>AI followup sequences Day 1·3·7·14</span>
+    <span class="trust-item"><span class="trust-sep"></span>Proposal in 2 minutes not 3 hours</span>
+    <span class="trust-item"><span class="trust-sep"></span>Cold lead reactivation on autopilot</span>
+    <span class="trust-item"><span class="trust-sep"></span>Monday pipeline report 8am sharp</span>
+    <span class="trust-item"><span class="trust-sep"></span>Built on Claude AI · Supabase · Gmail · Vercel</span>
+    <span class="trust-item"><span class="trust-sep"></span>Speed to lead — under 60 seconds</span>
+    <span class="trust-item"><span class="trust-sep"></span>AI followup sequences Day 1·3·7·14</span>
+    <span class="trust-item"><span class="trust-sep"></span>Proposal in 2 minutes not 3 hours</span>
+    <span class="trust-item"><span class="trust-sep"></span>Cold lead reactivation on autopilot</span>
+    <span class="trust-item"><span class="trust-sep"></span>Monday pipeline report 8am sharp</span>
+    <span class="trust-item"><span class="trust-sep"></span>Built on Claude AI · Supabase · Gmail · Vercel</span>
+  </div>
+</div>
+
+<div class="div-line" style="margin-top:5.5rem;"></div>
+
+<!-- PROBLEM -->
+<section class="section" id="problem">
+  <div class="reveal"><div class="s-label">The problem</div><h2 class="s-title">Your pipeline leaks<br><i>revenue every single day</i></h2><p class="s-sub">Five silent killers destroying your team's close rate — and nobody notices until the quarter is over.</p></div>
+  <div class="prob-grid stagger">
+    <div class="prob-card"><div class="prob-icon">💀</div><div class="prob-title">The followup black hole</div><div class="prob-desc">Rep has a great first meeting. Promises to follow up. Never does. Lead buys from a competitor. Revenue gone forever.</div><div class="prob-loss">₹3–5L lost per month per team</div></div>
+    <div class="prob-card"><div class="prob-icon">⏱️</div><div class="prob-title">Manual proposal writing</div><div class="prob-desc">Every proposal written from scratch. 2–3 hours each. 20 leads a week = one full employee's work week, wasted.</div><div class="prob-loss">40+ hours wasted monthly</div></div>
+    <div class="prob-card"><div class="prob-icon">🎯</div><div class="prob-title">No lead scoring</div><div class="prob-desc">Reps chase cold leads with the same energy as hot ones. Hot leads go cold while reps waste time on wrong people.</div><div class="prob-loss">60% of hot leads ignored</div></div>
+    <div class="prob-card"><div class="prob-icon">💤</div><div class="prob-title">CRM abandonment</div><div class="prob-desc">Team buys a CRM. Uses it for 3 months. Stops. Updating CRM feels like extra work on top of actual selling.</div><div class="prob-loss">Zero pipeline visibility</div></div>
+    <div class="prob-card"><div class="prob-icon">🔇</div><div class="prob-title">Post-meeting silence</div><div class="prob-desc">Action items live in someone's head. 60% never happen. Trust breaks. Deals die silently with no one noticing.</div><div class="prob-loss">Trust destroyed, deals lost</div></div>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="reveal"><div class="s-label">What Revvr does</div><h2 class="s-title">One system that fixes<br><i>all five problems</i></h2><p class="s-sub">Revvr sits silently between your team and your leads — keeping every deal alive automatically, 24 hours a day.</p></div>
+
+  <!-- Feature float cards -->
+  <div class="feat-float stagger">
+    <div class="feat-float-card"><div class="ffc-icon">⚡</div><div class="ffc-title">Speed to lead</div><div class="ffc-desc">First message to new lead in under 60 seconds automatically. Never lose a deal in the first hour again.</div><span class="ffc-tag">Automation 1</span></div>
+    <div class="feat-float-card"><div class="ffc-icon">📄</div><div class="ffc-title">AI proposals</div><div class="ffc-desc">Complete professional proposal in 2 minutes. 3 tones, auto ROI calc, one-click email to lead.</div><span class="ffc-tag">Automation 2</span></div>
+    <div class="feat-float-card"><div class="ffc-icon">🔁</div><div class="ffc-title">Followup sequences</div><div class="ffc-desc">Day 1, 3, 7, 14 — AI-written personalised messages sent automatically. Zero rep effort until they reply.</div><span class="ffc-tag">Automation 3</span></div>
+    <div class="feat-float-card"><div class="ffc-icon">❄️</div><div class="ffc-title">Cold reactivation</div><div class="ffc-desc">Weekly scan of cold leads. 30-day AI campaign to bring them back. Converts 8–12% of dead leads.</div><span class="ffc-tag">Automation 4</span></div>
+    <div class="feat-float-card"><div class="ffc-icon">📊</div><div class="ffc-title">Pipeline reports</div><div class="ffc-desc">Monday 8am WhatsApp to sales head. Hot leads, deals at risk, revenue recovered. Full visibility.</div><span class="ffc-tag">Automation 5</span></div>
+    <div class="feat-float-card"><div class="ffc-icon">🎯</div><div class="ffc-title">Lead scoring</div><div class="ffc-desc">Real-time 0–100 score for every lead. Hot alerts sent instantly. Your reps always call the right people first.</div><span class="ffc-tag">AI powered</span></div>
+  </div>
+
+  <!-- Deep dive splits -->
+  <div class="split">
+    <div class="reveal-l"><div class="split-img"><img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80" alt="Sales team"/><div class="split-badge">Revvr in action</div></div></div>
+    <div class="reveal-r">
+      <div class="s-label">Core engine</div>
+      <h3 style="font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;color:var(--ink);margin-bottom:.75rem;letter-spacing:-.3px;">Speed to lead +<br><i>followup sequences</i></h3>
+      <p style="font-size:14px;color:var(--ink-3);line-height:1.75;">The moment a lead enters your pipeline, Revvr sends a personalised first message within 60 seconds — then follows up on Day 3, 7, and 14 automatically, with a different angle each time.</p>
+      <div class="feat-list">
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">Day 1 — instant first touchpoint</div><div class="feat-item-desc">Sent within 60 seconds. Warm, personalised, and relevant to their context.</div></div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">Day 3, 7, 14 — AI-written sequences</div><div class="feat-item-desc">Different angle each time. AI reads the lead's context and writes accordingly.</div></div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">Zero effort from your reps</div><div class="feat-item-desc">They step in only when the lead replies. Everything else runs automatically.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="split flip" style="margin-top:3.5rem;">
+    <div class="reveal-l">
+      <div class="s-label">Document AI</div>
+      <h3 style="font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;color:var(--ink);margin-bottom:.75rem;letter-spacing:-.3px;">Proposals in 2 minutes,<br><i>not 3 hours</i></h3>
+      <p style="font-size:14px;color:var(--ink-3);line-height:1.75;">Fill in 4 fields. Revvr generates a complete, professional proposal in under 2 minutes — with auto ROI calculation, 3 tone options, and one-click email delivery.</p>
+      <div class="feat-list">
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">3 tones — professional, friendly, bold</div><div class="feat-item-desc">Match your proposal style to each client's personality perfectly.</div></div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">Auto ROI calculation included</div><div class="feat-item-desc">Shows the client exactly how much revenue they'll recover and when.</div></div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">One click to email the lead</div><div class="feat-item-desc">Sent directly from the dashboard. No copy pasting needed.</div></div></div>
+      </div>
+    </div>
+    <div class="reveal-r"><div class="split-img"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80" alt="Dashboard"/><div class="split-badge">AI proposal generator</div></div></div>
+  </div>
+
+  <div class="split" style="margin-top:3.5rem;">
+    <div class="reveal-l"><div class="split-img"><img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80" alt="Team"/><div class="split-badge">Cold lead reactivation</div></div></div>
+    <div class="reveal-r">
+      <div class="s-label">Database reactivation</div>
+      <h3 style="font-family:'Instrument Serif',serif;font-size:28px;font-weight:400;color:var(--ink);margin-bottom:.75rem;letter-spacing:-.3px;">Mine your cold lead<br><i>graveyard every week</i></h3>
+      <p style="font-size:14px;color:var(--ink-3);line-height:1.75;">Every week Revvr scans for cold leads and runs personalised reactivation campaigns automatically. Your Monday morning starts with a complete pipeline summary — no manual reporting needed.</p>
+      <div class="feat-list">
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">30-day cold lead campaign</div><div class="feat-item-desc">3 messages, different angles. Converts 8–12% of dead leads back into pipeline.</div></div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">Hot lead alerts — instant</div><div class="feat-item-desc">Score crosses 75? Rep gets WhatsApp alert with recommended action immediately.</div></div></div>
+        <div class="feat-item"><div class="feat-dot"></div><div><div class="feat-item-title">Monday 8am pipeline report</div><div class="feat-item-desc">Hot leads · deals at risk · followups sent · revenue recovered. Automatically.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="dark-section" id="how">
+  <div class="dark-inner">
+    <div class="reveal"><div class="s-label">How it works</div><h2 class="s-title">Set up once.<br><i style="color:#6b6b80;">Runs forever.</i></h2><p class="s-sub">No new software to learn, no IT team, no developer required.</p></div>
+    <div class="steps stagger">
+      <div class="step active-step" onclick="showStep(0)"><div class="step-n">01</div><div class="step-title">We audit your pipeline</div><div class="step-desc">Map current process, tools, and where deals are dying.</div><span class="step-week">Week 1</span></div>
+      <div class="step" onclick="showStep(1)"><div class="step-n">02</div><div class="step-title">We build your system</div><div class="step-desc">Configure Revvr, connect CRM, WhatsApp, train AI.</div><span class="step-week">Week 1–2</span></div>
+      <div class="step" onclick="showStep(2)"><div class="step-n">03</div><div class="step-title">We hand it over</div><div class="step-desc">30-min handover. Full docs. You own it completely.</div><span class="step-week">Week 2</span></div>
+      <div class="step" onclick="showStep(3)"><div class="step-n">04</div><div class="step-title">Revenue comes back</div><div class="step-desc">Followups go out. Deals close. Reports arrive. Auto.</div><span class="step-week">Week 3+</span></div>
+    </div>
+    <div id="step-detail" class="step-detail show"></div>
+    <div style="margin-top:2rem;" class="reveal"><div style="font-size:13px;color:#4a4a5a;margin-bottom:1rem;">Built on tools your team already knows:</div><div class="stk"><div class="stk-pill">Claude AI</div><div class="stk-pill">Supabase</div><div class="stk-pill">Gmail</div><div class="stk-pill">Razorpay</div><div class="stk-pill">Vercel</div><div class="stk-pill">Google Sheets</div></div></div>
+  </div>
+</div>
+
+<!-- NUMBERS -->
+<div class="numbers-dark">
+  <div class="numbers-inner">
+    <div class="reveal"><div class="s-label" style="color:#ff4d1c;">The results</div><h2 class="s-title">Numbers that<br><i style="color:#6b6b80;">speak for themselves</i></h2></div>
+    <div class="numbers-grid stagger">
+      <div class="num-card"><span class="num-val"><span class="num-acc" data-target="40" data-suffix="%">0%</span></span><div class="num-label">of deals recovered<br>from cold leads</div></div>
+      <div class="num-card"><span class="num-val">2 <span style="font-size:24px;color:#6b6b80;">min</span></span><div class="num-label">average proposal<br>generation time</div></div>
+      <div class="num-card"><span class="num-val"><span class="num-acc" data-target="68" data-suffix="%">0%</span></span><div class="num-label">average reply rate<br>on Day 1 followup</div></div>
+      <div class="num-card"><span class="num-val">17 <span style="font-size:24px;color:#6b6b80;">days</span></span><div class="num-label">average payback<br>on ₹40K investment</div></div>
+      <div class="num-card"><span class="num-val">₹<span class="num-acc" data-target="3" data-suffix="L+">0</span></span><div class="num-label">monthly revenue<br>recovered per client</div></div>
+      <div class="num-card"><span class="num-val"><span class="num-acc" data-target="2" data-suffix=" wks">0</span></span><div class="num-label">from payment to<br>fully live system</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="reveal"><div class="s-label">Early results</div><h2 class="s-title">What teams are <i>saying</i></h2><p class="s-sub">Early adopters from our pilot program across Indian B2B sales teams.</p></div>
+  <div class="testi-grid stagger">
+    <div class="testi"><div class="testi-stars">★★★★★</div><div class="testi-quote">"We were losing 3–4 deals every month just because no one followed up. Revvr fixed that in week one."</div><div class="testi-author"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80" alt="Rahul"/></div><div><div class="testi-name">Rahul Sharma</div><div class="testi-role">Sales Head · TechCorp India</div></div></div></div>
+    <div class="testi"><div class="testi-stars">★★★★★</div><div class="testi-quote">"Proposal turnaround went from 3 days to 20 minutes. Close rate up 28% in the first month alone."</div><div class="testi-author"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=80&q=80" alt="Priya"/></div><div><div class="testi-name">Priya Mehta</div><div class="testi-role">Founder · FinStart Solutions</div></div></div></div>
+    <div class="testi"><div class="testi-stars">★★★★★</div><div class="testi-quote">"My team of 8 now feels like a team of 20. Revvr handles everything after the first meeting."</div><div class="testi-author"><div class="testi-avatar"><img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&q=80" alt="Amit"/></div><div><div class="testi-name">Amit Gupta</div><div class="testi-role">Director Sales · RetailCo</div></div></div></div>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- DASHBOARD PREVIEW -->
+<section class="section" id="dashboard">
+  <div class="reveal" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2rem;">
+    <div>
+      <div class="s-label">Client dashboard</div>
+      <h2 class="s-title">Your entire pipeline —<br><i>live, in one place</i></h2>
+      <p class="s-sub" style="margin-top:.5rem;">Pipeline kanban · AI followup composer · Proposal builder · ROI dashboard · Activity feed</p>
+    </div>
+    <a href="/dashboard" target="_blank" class="btn-p" style="background:var(--teal);">Open dashboard ↗</a>
+  </div>
+
+  <!-- Dashboard mockup card -->
+  <div class="reveal" style="background:var(--ink);border-radius:var(--rl);overflow:hidden;border:1px solid #1e1e2a;">
+
+    <!-- Mock topbar -->
+    <div style="background:#0d0d14;border-bottom:1px solid #1e1e2a;padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:#fff;letter-spacing:-1px;">revvr<span style="color:var(--accent);">.</span></div>
+        <div style="display:flex;gap:6px;">
+          <div style="padding:5px 14px;border-radius:100px;background:#1e1e2a;font-size:11px;font-weight:600;color:#fff;">Pipeline</div>
+          <div style="padding:5px 14px;border-radius:100px;font-size:11px;font-weight:500;color:#6b6b80;">Followups</div>
+          <div style="padding:5px 14px;border-radius:100px;font-size:11px;font-weight:500;color:#6b6b80;">Proposals</div>
+          <div style="padding:5px 14px;border-radius:100px;font-size:11px;font-weight:500;color:#6b6b80;">ROI</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="display:flex;align-items:center;gap:5px;background:rgba(13,148,136,.15);padding:4px 10px;border-radius:100px;font-size:11px;font-weight:600;color:#0d9488;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#0d9488;animation:rtPulse 1.5s ease-in-out infinite;"></div>Live
+        </div>
+        <div style="background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:5px 14px;border-radius:100px;">+ Add lead</div>
+      </div>
+    </div>
+
+    <!-- Mock metric row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e1e2a;border-bottom:1px solid #1e1e2a;">
+      <div style="background:#0d0d14;padding:1rem 1.25rem;">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.35rem;">Total leads</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;color:#fff;line-height:1;letter-spacing:-1px;">47</div>
+        <div style="font-size:11px;color:#22c55e;margin-top:3px;">+3 today</div>
+      </div>
+      <div style="background:#0d0d14;padding:1rem 1.25rem;">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.35rem;">Hot leads</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;color:var(--accent);line-height:1;letter-spacing:-1px;">8</div>
+        <div style="font-size:11px;color:#22c55e;margin-top:3px;">↑ 2 this week</div>
+      </div>
+      <div style="background:#0d0d14;padding:1rem 1.25rem;">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.35rem;">Pipeline value</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;color:#fff;line-height:1;letter-spacing:-1px;">₹24.6L</div>
+        <div style="font-size:11px;color:#22c55e;margin-top:3px;">+₹2.4L added</div>
+      </div>
+      <div style="background:#0d0d14;padding:1rem 1.25rem;">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#6b6b80;margin-bottom:.35rem;">Reply rate</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;color:#0d9488;line-height:1;letter-spacing:-1px;">68%</div>
+        <div style="font-size:11px;color:#6b6b80;margin-top:3px;">of followups</div>
+      </div>
+    </div>
+
+    <!-- Mock pipeline kanban -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e1e2a;padding:0;">
+      <!-- Hot column -->
+      <div style="background:#0d0d14;padding:.85rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);">Hot leads</div>
+          <div style="background:var(--accent-l);color:var(--accent-d);font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;">3</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="background:#1a1a24;border-radius:8px;padding:.75rem;border-left:3px solid var(--accent);">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">Rahul Sharma</div>
+            <div style="font-size:10px;color:#6b6b80;margin-bottom:6px;">TechCorp India</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:11px;font-weight:600;color:#d4d0c8;">₹80,000</div>
+              <div style="background:var(--accent-l);color:var(--accent-d);font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;">88</div>
+            </div>
+          </div>
+          <div style="background:#1a1a24;border-radius:8px;padding:.75rem;border-left:3px solid var(--accent);">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">Priya Mehta</div>
+            <div style="font-size:10px;color:#6b6b80;margin-bottom:6px;">FinStart Solutions</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:11px;font-weight:600;color:#d4d0c8;">₹1,20,000</div>
+              <div style="background:var(--accent-l);color:var(--accent-d);font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;">79</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Warm column -->
+      <div style="background:#0d0d14;padding:.85rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#d97706;">Warm leads</div>
+          <div style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;">2</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="background:#1a1a24;border-radius:8px;padding:.75rem;border-left:3px solid #d97706;">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">Sanjay Kumar</div>
+            <div style="font-size:10px;color:#6b6b80;margin-bottom:6px;">BuildFast Infra</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:11px;font-weight:600;color:#d4d0c8;">₹60,000</div>
+              <div style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;">65</div>
+            </div>
+          </div>
+          <div style="background:#1a1a24;border-radius:8px;padding:.75rem;border-left:3px solid #d97706;">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">Anita Desai</div>
+            <div style="font-size:10px;color:#6b6b80;margin-bottom:6px;">HR Circle</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:11px;font-weight:600;color:#d4d0c8;">₹45,000</div>
+              <div style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;">58</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Cold column -->
+      <div style="background:#0d0d14;padding:.85rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#2563eb;">Cold leads</div>
+          <div style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;">2</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="background:#1a1a24;border-radius:8px;padding:.75rem;border-left:3px solid #2563eb;">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">Deepak Nair</div>
+            <div style="font-size:10px;color:#6b6b80;margin-bottom:6px;">RetailCo Pvt Ltd</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:11px;font-weight:600;color:#d4d0c8;">₹1,50,000</div>
+              <div style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;">41</div>
+            </div>
+          </div>
+          <div style="background:#1a1a24;border-radius:8px;padding:.75rem;border-left:3px solid #2563eb;">
+            <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:2px;">Kavya Reddy</div>
+            <div style="font-size:10px;color:#6b6b80;margin-bottom:6px;">EduTech Ventures</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:11px;font-weight:600;color:#d4d0c8;">₹55,000</div>
+              <div style="background:#dbeafe;color:#1e40af;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;">28</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Dead column -->
+      <div style="background:#0d0d14;padding:.85rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b6b80;">Dead leads</div>
+          <div style="background:#1e1e2a;color:#6b6b80;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;">1</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="background:#1a1a24;border-radius:8px;padding:.75rem;border-left:3px solid #3a3a4a;opacity:.7;">
+            <div style="font-size:12px;font-weight:700;color:#9090a8;margin-bottom:2px;">Mohan Das</div>
+            <div style="font-size:10px;color:#4a4a5a;margin-bottom:6px;">LogiTrans Corp</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:11px;font-weight:600;color:#4a4a5a;">₹90,000</div>
+              <div style="background:#1e1e2a;color:#6b6b80;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;">12</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA overlay -->
+    <div style="padding:1.25rem 1.5rem;background:#0d0d14;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#fff;">This is your live pipeline after onboarding</div>
+        <div style="font-size:12px;color:#6b6b80;margin-top:2px;">Real leads · Real scores · Real-time updates via Claude AI</div>
+      </div>
+      <a href="/dashboard" target="_blank" style="background:var(--teal);color:#fff;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:700;text-decoration:none;transition:background .2s;white-space:nowrap;" onmouseover="this.style.background='#0a7060'" onmouseout="this.style.background='var(--teal)'">Open full dashboard →</a>
+    </div>
+  </div>
+
+  <!-- Feature pills below mockup -->
+  <div class="stagger" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:1.25rem;">
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:500;color:var(--ink-2);">Pipeline kanban</div>
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:500;color:var(--ink-2);">AI followup composer</div>
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:500;color:var(--ink-2);">Proposal builder</div>
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:500;color:var(--ink-2);">ROI dashboard</div>
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:500;color:var(--ink-2);">Live activity feed</div>
+    <div style="background:#fff;border:1px solid var(--paper-3);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:500;color:var(--ink-2);">Lead detail sidebar</div>
+    <a href="/dashboard" target="_blank" style="background:var(--teal-l);border:1px solid rgba(13,148,136,.3);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:700;color:var(--teal-d);text-decoration:none;">Try it now ↗</a>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- BLOG PREVIEW -->
+<section class="section">
+  <div class="reveal" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+    <div><div class="s-label">From the blog</div><h2 class="s-title">Sales insights for<br><i>Indian B2B teams</i></h2></div>
+    <a href="/blog" target="_blank" class="btn-o" style="padding:10px 22px;font-size:13px;">Read all posts →</a>
+  </div>
+  <div class="blog-grid stagger">
+    <a href="/blog" target="_blank" class="blog-card"><img src="https://images.unsplash.com/photo-1556761175-4b46a572b786?w=600&q=80" alt="Blog"/><div class="blog-card-body"><div class="blog-cat">Sales Strategy</div><div class="blog-title">Why 40% of Indian B2B deals die in silence after the first meeting</div><div class="blog-meta">5 min read</div></div></a>
+    <a href="/blog" target="_blank" class="blog-card"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" alt="Blog"/><div class="blog-card-body"><div class="blog-cat">Productivity</div><div class="blog-title">The real cost of writing proposals manually — ₹40 lakhs a year wasted</div><div class="blog-meta">4 min read</div></div></a>
+    <a href="/blog" target="_blank" class="blog-card"><img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80" alt="Blog"/><div class="blog-card-body"><div class="blog-cat">AI in Sales</div><div class="blog-title">Your cold lead database is a goldmine. Here's how to mine it with AI.</div><div class="blog-meta">6 min read</div></div></a>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="reveal"><div class="s-label">Pricing</div><h2 class="s-title">Simple pricing.<br><i>One-time setup.</i></h2><p class="s-sub">No monthly SaaS fees. No per-user pricing. Pay once, runs forever. ~₹1,600/month in API costs only.</p></div>
+  <div class="roi-bar reveal"><div><h3>Pays for itself in 17 days</h3><p>For a 15-person team with ₹80K average deal value</p></div><div class="roi-nums"><div class="roi-num"><span class="roi-num-val">₹3.2L</span><div class="roi-num-lbl">monthly recovery</div></div><div class="roi-num"><span class="roi-num-val">600%</span><div class="roi-num-lbl">month-one ROI</div></div><div class="roi-num"><span class="roi-num-val">17 days</span><div class="roi-num-lbl">payback period</div></div></div></div>
+  <div class="pricing-grid stagger">
+    <div class="price-card"><div class="p-tier">Starter</div><div class="p-team">1–5 person team</div><div class="p-price">₹25,000</div><div class="p-note">one-time setup</div><ul class="p-feats"><li>Auto followup sequences</li><li>Smart lead scoring</li><li>Google Sheets CRM</li><li>WhatsApp automation</li><li>2-week setup included</li></ul><button class="p-btn" onclick="goToSignup('growth')">Get started</button></div>
+    <div class="price-card pop"><div class="pop-badge">Most popular</div><div class="p-tier">Growth</div><div class="p-team">5–20 person team</div><div class="p-price">₹40,000</div><div class="p-note">one-time setup</div><ul class="p-feats"><li>Everything in Starter</li><li>AI proposal generator</li><li>Full CRM integration</li><li>Cold lead reactivation</li><li>Weekly pipeline reports</li><li>Hot lead alerts</li></ul><button class="p-btn pop-btn" onclick="goToSignup('growth')">Get started →</button></div>
+    <div class="price-card"><div class="p-tier">Enterprise</div><div class="p-team">20+ person team</div><div class="p-price">₹75,000</div><div class="p-note">one-time setup</div><ul class="p-feats"><li>Everything in Growth</li><li>Custom AI workflows</li><li>Multi-team setup</li><li>Dedicated support</li><li>Monthly review calls</li><li>Priority implementation</li></ul><button class="p-btn" onclick="goToSignup('enterprise')">Talk to us</button></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-wrap" id="cta">
+  <div class="cta-inner">
+    <div class="reveal"><h2>Start your <i>free demo</i><br>today.</h2><p>Enter your details below — we'll send a magic link to your dashboard within 30 minutes. No password, no card needed.</p></div>
+    <div style="text-align:center;margin-bottom:1rem;">
+      <span style="font-size:13px;color:#6b6b80;">Already a client? </span>
+      <a href="/login" target="_blank" style="font-size:13px;color:#ff6b40;font-weight:700;text-decoration:none;">Login to dashboard →</a>
+    </div>
+    <div class="cta-form-card reveal">
+      <button class="cta-g-btn" onclick="handleGoogle()"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>Continue with Google work account</button>
+      <div class="cta-divider"><span>or fill in manually</span></div>
+      <div id="cta-form-body">
+        <div class="cta-fields">
+          <div class="cta-row"><div class="cf-group"><div class="cf-label">Full name</div><input class="cf-input" id="cf-name" placeholder="Rahul Sharma"/></div><div class="cf-group"><div class="cf-label">Work email</div><input class="cf-input" id="cf-email" type="email" placeholder="rahul@company.com"/></div></div>
+          <div class="cta-row"><div class="cf-group"><div class="cf-label">Company name</div><input class="cf-input" id="cf-company" placeholder="TechCorp India"/></div><div class="cf-group"><div class="cf-label">Team size</div><select class="cf-select" id="cf-size"><option value="">Select team size</option><option>1–5 people</option><option>5–20 people</option><option>20–50 people</option><option>50+ people</option></select></div></div>
+          <div class="cf-group"><div class="cf-label">Biggest sales challenge</div><input class="cf-input" id="cf-challenge" placeholder="e.g. Our reps aren't following up consistently..."/></div>
+          <div class="cf-group"><div class="cf-label">Preferred demo slot</div><div class="slot-btns" id="slot-btns"><button class="slot-btn" onclick="pickSlot(this)">Morning 10–12pm</button><button class="slot-btn" onclick="pickSlot(this)">Afternoon 2–4pm</button><button class="slot-btn" onclick="pickSlot(this)">Evening 5–7pm</button><button class="slot-btn" onclick="pickSlot(this)">Flexible</button></div></div>
+        </div>
+        <button class="cf-submit" onclick="submitCTA()">Book my free demo →</button>
+        <div class="cta-note" id="cta-note">No spam. No sales pressure. Just a 30-minute live demo.</div>
+      </div>
+      <div class="cta-success" id="cta-success">
+        <div class="cta-success-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12l6 6 10-10" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>You're booked!</h3>
+        <p>Check your email — we'll send a magic link to access your dashboard within 30 minutes. No password needed.</p>
+        <a href="/login" target="_blank" style="display:inline-block;margin-top:1rem;background:var(--teal);color:#fff;padding:10px 24px;border-radius:100px;font-size:13px;font-weight:700;text-decoration:none;">Open dashboard now →</a>
+      </div>
+    </div>
+    <div class="trust-row reveal">
+      <div class="trust-item-sm">🔒 No spam ever</div>
+      <div class="trust-item-sm">📅 30 min call only</div>
+      <div class="trust-item-sm">✓ Zero commitment</div>
+      <div class="trust-item-sm">🇮🇳 Built for India</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">revvr<em>.</em></div>
+  <div class="footer-links">
+    <a href="#problem">Problem</a><a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a>
+    <a href="/blog" target="_blank">Blog</a>
+    <a href="/demo" target="_blank">Live Demo ↗</a>
+    <a href="/login" target="_blank">Login</a>
+    <a href="/dashboard" target="_blank">Dashboard</a>
+    <a href="/cdn-cgi/l/email-protection#3c54595050537c4e594a4a4e125552"><span class="__cf_email__" data-cfemail="68000d040407281a0d1e1e1a460106">[email&#160;protected]</span></a>
+  </div>
+  <div class="footer-note">© 2026 Revvr · revvr.app</div>
+</footer>
+
+<div class="sticky-bar"><div class="sticky-bar-text">Start free — get dashboard access today</div><button class="sticky-bar-btn" onclick="goToSignup('growth')">Book now →</button></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// PAGE LOADER
+window.addEventListener('load',()=>{setTimeout(()=>{document.getElementById('loader').classList.add('done');},800);});
+
+// CUSTOM CURSOR
+const cur=document.getElementById('cursor');
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+document.querySelectorAll('a,button,.prob-card,.feat-float-card,.testi,.price-card,.num-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.classList.add('big'));
+  el.addEventListener('mouseleave',()=>cur.classList.remove('big'));
+});
+
+// NAV SCROLL
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>20);
+},{passive:true});
+
+// MOBILE MENU
+function openMobile(){document.getElementById('mmenu').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobile(){document.getElementById('mmenu').classList.remove('open');document.body.style.overflow='';}
+
+// SMOOTH SCROLL
+document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}});});
+
+// SCROLL REVEALS
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.reveal,.reveal-l,.reveal-r,.reveal-scale,.stagger').forEach(el=>obs.observe(el));
+
+// COUNTERS
+setTimeout(()=>{document.querySelectorAll('[data-target]').forEach(el=>{const t=parseInt(el.dataset.target),s=el.dataset.suffix||'';let c=0;const step=Math.ceil(t/40);const tm=setInterval(()=>{c=Math.min(c+step,t);el.textContent=c+s;if(c>=t)clearInterval(tm);},35);});},600);
+
+// LIVE COUNTER
+let lc=247;setInterval(()=>{if(Math.random()>.7){lc+=Math.floor(Math.random()*3)+1;document.getElementById('live-count').textContent=lc;}},4000);
+
+// HOW IT WORKS STEPPER
+const stepData=[
+  {title:'Audit — we map your entire pipeline',items:['90-minute discovery call to understand your process','Map every tool — CRM, WhatsApp, email, spreadsheets','Identify exactly where deals are dying and why','Written findings report with clear recommendations']},
+  {title:'Build — we configure Revvr for your team',items:['Set up Claude AI email automations on Vercel','Connect Gmail for automated followup sequences','Train Claude AI on your sales playbook and templates','Configure Supabase with your team structure and leads']},
+  {title:'Handover — you own it completely',items:['30-minute live walkthrough with your sales team','Full documentation so you manage it independently','Video recordings of every automation for reference','Live and autonomous within 2 weeks — guaranteed']},
+  {title:'Revenue — deals start closing again',items:['Day 1 followups go out within 60 seconds of new leads','Proposals generated in 2 minutes from your dashboard','Monday 8am report hits your WhatsApp automatically','Cold leads reactivated — found money from your graveyard']},
+];
+function showStep(idx){
+  document.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('active-step',i===idx));
+  const d=stepData[idx];const el=document.getElementById('step-detail');
+  el.className='step-detail show';
+  el.innerHTML=`<div class="step-detail-title">${d.title}</div><div class="step-detail-list">${d.items.map(i=>`<div class="step-detail-item">${i}</div>`).join('')}</div>`;
+}
+showStep(0);
+
+// CTA FORM
+function pickSlot(btn){document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+function handleGoogle(){const n=document.getElementById('cta-note');n.style.color='#ff6b40';n.textContent='Google OAuth coming soon — please use the form below for now.';setTimeout(()=>{n.style.color='#4a4a5a';n.textContent='No spam. No sales pressure. Just a 30-minute live demo.';},3000);}
+function submitCTA(){
+  const name=document.getElementById('cf-name').value.trim();
+  const email=document.getElementById('cf-email').value.trim();
+  const company=document.getElementById('cf-company').value.trim();
+  const size=document.getElementById('cf-size').value;
+  const challenge=document.getElementById('cf-challenge')?.value.trim()||'';
+  const note=document.getElementById('cta-note');
+
+  if(!name){note.style.color='var(--accent)';note.textContent='Please enter your name.';return;}
+  if(!email||!email.includes('@')){note.style.color='var(--accent)';note.textContent='Please enter a valid work email.';return;}
+  if(!company){note.style.color='var(--accent)';note.textContent='Please enter your company name.';return;}
+
+  // Show success state immediately — don't wait for API
+  document.getElementById('cta-form-body').style.display='none';
+  document.getElementById('cta-success').style.display='block';
+
+  // ── SEND TO REVVR API → speed-to-lead.js ──
+  // This saves the lead to Supabase, Claude writes a personalised email,
+  // and sends it to the lead — all automatically on the server
+  fetch('/api/speed-to-lead', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      name,
+      email,
+      company,
+      team_size: size,
+      challenge,
+      source: 'homepage_cta',
+      submitted_at: new Date().toISOString()
+    })
+  })
+  .then(res => res.json())
+  .then(data => console.log('Lead saved and email sent:', data))
+  .catch(err => console.error('Speed to lead error:', err));
+
+  // Store lead in sessionStorage so login page pre-fills email
+  sessionStorage.setItem('revvr_lead', JSON.stringify({name, email, company, size}));
+
+  // Redirect to login after 2 seconds
+  setTimeout(() => {
+    window.open('/login?source=demo_booking&email=' + encodeURIComponent(email), '_blank');
+  }, 2000);
+}
+
+function goToSignup(plan){
+  // Scroll to CTA if no email yet, or go straight to login
+  const cta=document.getElementById('cta');
+  const email=document.getElementById('cf-email')?.value.trim();
+  if(email&&email.includes('@')){
+    // Already filled — go to login with plan
+    window.open('/login?plan='+plan+'&email='+encodeURIComponent(email),'_blank');
+  } else {
+    // Scroll to CTA form first
+    cta.scrollIntoView({behavior:'smooth'});
+    setTimeout(()=>document.getElementById('cf-email')?.focus(),600);
+  }
+}
+
+// PARALLAX
+window.addEventListener('scroll',()=>{
+  const m=document.querySelector('.mosaic');if(!m)return;
+  const r=m.getBoundingClientRect();if(r.bottom<0||r.top>window.innerHeight)return;
+  const p=(r.top/window.innerHeight)*14;
+  m.querySelectorAll('.mosaic-card img').forEach((img,i)=>{img.style.transform=`translateY(${p*(i%2===0?1:-1)}px)`;});
+},{passive:true});
+</script>
+</body>
+</html>

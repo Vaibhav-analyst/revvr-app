@@ -1,0 +1,15 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/login",     "destination": "/login.html"     },
+    { "source": "/demo",      "destination": "/demo.html"      },
+    { "source": "/blog",      "destination": "/blog.html"      }
+  ],
+  "crons": [
+    { "path": "/api/daily-followups",   "schedule": "30 3 * * *" },
+    { "path": "/api/weekly-report",     "schedule": "30 2 * * 1" },
+    { "path": "/api/cold-reactivation", "schedule": "30 4 * * 1" }
+  ]
+}
