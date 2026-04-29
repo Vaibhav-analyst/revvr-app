@@ -21,7 +21,7 @@
   --sidebar:240px;
 }
 html{height:100%;}
-body{font-family:'Outfit',sans-serif;background:var(--paper-2);color:var(--ink);line-height:1.5;overflow-x:hidden;min-height:100vh;display:flex;}
+body{font-family:'Outfit',sans-serif;background:var(--paper-2);color:var(--ink);line-height:1.5;overflow-x:hidden;min-height:100vh;display:flex;visibility:hidden;}
 
 /* ── SIDEBAR ── */
 .sidebar{width:var(--sidebar);background:var(--ink);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s ease;}
@@ -652,12 +652,13 @@ async function checkAuth() {
   const { data: { session } } = await sb.auth.getSession()
 
   if (!session) {
-    // Not logged in — redirect to login
+    // Not logged in — go to login immediately, body stays hidden
     window.location.href = '/login?redirect=dashboard'
     return
   }
 
-  // Logged in — load their data
+  // Session confirmed — reveal dashboard now, then load data
+  document.body.style.visibility = 'visible'
   const user = session.user
   loadClientData(user)
 }

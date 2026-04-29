@@ -140,11 +140,34 @@ body{font-family:'Outfit',sans-serif;background:var(--ink);color:var(--ink);line
       <div class="error-msg" id="email-error">Please enter a valid work email address.</div>
     </div>
 
+    <div id="magic-link-section">
     <button class="submit-btn" id="submit-btn" onclick="sendMagicLink()">
       <span class="btn-text">Send magic link</span>
       <span class="btn-arrow">→</span>
       <div class="btn-spinner"></div>
     </button>
+    </div>
+
+    <div id="password-section" style="display:none">
+      <input
+        id="password-field"
+        type="password"
+        placeholder="Your password"
+        style="width:100%;padding:13px 16px;border-radius:8px;border:1.5px solid #e4e4de;background:#fff;font-size:15px;font-family:'Outfit',sans-serif;color:#0a0a0f;outline:none;box-sizing:border-box;margin-bottom:10px;transition:border-color .2s;"
+        onkeydown="if(event.key==='Enter')signInWithPassword()"
+        onfocus="this.style.borderColor='#ff4d1c'"
+        onblur="this.style.borderColor='#e4e4de'"
+      />
+      <button id="password-signin-btn" onclick="signInWithPassword()" style="width:100%;padding:14px;border-radius:8px;background:#ff4d1c;color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:background .2s;" onmouseover="this.style.background='#d93a0c'" onmouseout="this.style.background='#ff4d1c'">
+        Sign in →
+      </button>
+    </div>
+
+    <div style="text-align:center;margin:10px 0 4px">
+      <button id="mode-toggle-btn" onclick="toggleLoginMode()" style="background:none;border:none;color:#6b6b80;font-size:13px;cursor:pointer;font-family:'Outfit',sans-serif;text-decoration:underline;padding:0">
+        Sign in with password instead
+      </button>
+    </div>
 
     <div class="divider"><span>or continue with</span></div>
 
@@ -285,7 +308,7 @@ async function sendMagicLink() {
     const { error } = await sb.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin + '//dashboard'
+        emailRedirectTo: window.location.origin + '/dashboard'
       }
     })
 
@@ -339,7 +362,7 @@ async function resendLink() {
     await sb.auth.signInWithOtp({
       email: currentEmail,
       options: {
-        emailRedirectTo: window.location.origin + '//dashboard'
+        emailRedirectTo: window.location.origin + '/dashboard'
       }
     })
     resendBtn.textContent = 'Sent! Check your inbox'
@@ -358,10 +381,63 @@ async function signInWithGoogle() {
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + '//dashboard'
+      redirectTo: window.location.origin + '/dashboard'
     }
   })
   if (error) console.error('Google sign in error:', error)
+}
+
+
+/* ── EMAIL + PASSWORD SIGN IN ── */
+async function signInWithPassword() {
+  const emailField = document.getElementById('email-field')
+  const passwordField = document.getElementById('password-field')
+  const errorMsg = document.getElementById('email-error')
+  const btn = document.getElementById('password-signin-btn')
+  const email = emailField.value.trim().toLowerCase()
+  const password = passwordField ? passwordField.value : ''
+
+  emailField.classList.remove('error')
+  errorMsg.classList.remove('show')
+
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    emailField.classList.add('error')
+    errorMsg.textContent = 'Please enter a valid email address.'
+    errorMsg.classList.add('show')
+    return
+  }
+  if (!password || password.length < 6) {
+    errorMsg.textContent = 'Password must be at least 6 characters.'
+    errorMsg.classList.add('show')
+    return
+  }
+
+  btn.disabled = true
+  btn.textContent = 'Signing in...'
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    window.location.href = '/dashboard'
+  } catch (err) {
+    btn.disabled = false
+    btn.textContent = 'Sign in →'
+    errorMsg.textContent = err.message || 'Invalid email or password. Try magic link instead.'
+    errorMsg.classList.add('show')
+  }
+}
+
+/* ── TOGGLE between magic link and password ── */
+let loginMode = 'magic'
+function toggleLoginMode() {
+  const magicSection = document.getElementById('magic-link-section')
+  const passwordSection = document.getElementById('password-section')
+  const toggleBtn = document.getElementById('mode-toggle-btn')
+  loginMode = loginMode === 'magic' ? 'password' : 'magic'
+  const isMagic = loginMode === 'magic'
+  if (magicSection) magicSection.style.display = isMagic ? 'block' : 'none'
+  if (passwordSection) passwordSection.style.display = isMagic ? 'none' : 'block'
+  if (toggleBtn) toggleBtn.textContent = isMagic ? 'Sign in with password instead' : 'Use magic link instead'
 }
 
 /* ── ENTER KEY SUPPORT ── */
@@ -448,4 +524,4 @@ const urlParams = new URLSearchParams(window.location.search)
 const hashParams = new URLSearchParams(window.location.hash.substring(1))
 
 if (urlParams.get('token_hash') || hashParams.get('access_token')) {
-  switchView('view-verifying')
+  switchView('view-verifying'
